@@ -1,16 +1,17 @@
 import { useNavigate, Link } from "react-router-dom";
 import { useState } from "react";
-// import register from "../services";
 import Button from "../components/common/Button";
+import { useAuth } from "../hooks/useAuth";
 
 const Register = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
-   confirmPassword: "",
+    confirmPassword: "",
   });
   const navigate = useNavigate();
+  const { register } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -21,114 +22,108 @@ const Register = () => {
     });
   };
 
-  //     const handlSubmit = async (e) => {
-  //       alert("successfuly register.")
-  //     e.preventDefault();
-  //     (setLoading(true), setError(""));
-  //     try {
-  //     //   const res = await register(formData);
-  //     //   if (res.status === 200) {
-  //     //     navigate("/login");
-  //     //   }
-  //     } catch (error) {
-  //       setError(error.response?.data?.message || "Login failed");
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
 
     try {
-      setLoading(true);
-      setError("");
-     if (formData.password !== formData.confirmPassword) {
-  setError("Passwords do not match");
-  return;
-}
-alert("Registration Successful!");
-navigate("/login");
-    } catch (error) {
-      setError(error);
+      await register({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+      });
+      navigate("/login");
+    } catch (err) {
+      setError(err.message || "Registration failed");
     } finally {
       setLoading(false);
     }
-
-    console.log(formData);
-
-    setLoading(false);
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gray-100 px-6">
-      <div className="bg-white shadow-xl rounded-2xl w-full max-w-md p-8">
-        <h1 className="text-3xl font-bold text-center">Create Account</h1>
+    <main className="min-h-screen flex items-center justify-center bg-[#0F172A] text-[#F8FAFC] px-6">
+      <div className="bg-[#1E293B] shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-[24px] w-full max-w-md p-8 border border-[#334155]">
+        <div className="text-center mb-8">
+          <div className="w-12 h-12 rounded-[14px] bg-gradient-to-tr from-[#4F7CFF] to-[#38BDF8] text-white flex items-center justify-center text-2xl font-black mx-auto mb-3 shadow-lg shadow-[#4F7CFF]/30">
+            D
+          </div>
+          <h1 className="text-3xl font-black text-[#F8FAFC]">Create Account</h1>
+          <p className="text-[#94A3B8] text-xs mt-1 font-medium">Join DevHub developer workspace</p>
+        </div>
 
-        <p className="text-center text-gray-500 mt-2">Join DevHub today</p>
-
-        <form onSubmit={handleSubmit} className="space-y-5 mt-8">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block mb-2 font-medium">Full Name</label>
-
+            <label className="block mb-1.5 font-bold text-xs text-[#CBD5E1]">Full Name</label>
             <input
               type="text"
               name="name"
               value={formData.name}
               onChange={handleChange}
               placeholder="Enter your name"
-              className="w-full border rounded-lg p-3 outline-none focus:ring-2 focus:ring-indigo-500"
+              required
+              className="w-full devhub-input p-3 text-sm"
             />
           </div>
 
           <div>
-            <label className="block mb-2 font-medium">Email</label>
-
+            <label className="block mb-1.5 font-bold text-xs text-[#CBD5E1]">Email Address</label>
             <input
               type="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
               placeholder="Enter your email"
-              className="w-full border rounded-lg p-3 outline-none focus:ring-2 focus:ring-indigo-500"
+              required
+              className="w-full devhub-input p-3 text-sm"
             />
           </div>
 
           <div>
-            <label className="block mb-2 font-medium">Password</label>
-
+            <label className="block mb-1.5 font-bold text-xs text-[#CBD5E1]">Password</label>
             <input
               type="password"
               name="password"
               value={formData.password}
               onChange={handleChange}
               placeholder="Create password"
-              className="w-full border rounded-lg p-3 outline-none focus:ring-2 focus:ring-indigo-500"
+              required
+              className="w-full devhub-input p-3 text-sm"
             />
           </div>
 
           <div>
-            <label className="block mb-2 font-medium">Confirm Password</label>
-
+            <label className="block mb-1.5 font-bold text-xs text-[#CBD5E1]">Confirm Password</label>
             <input
               type="password"
               name="confirmPassword"
-                          value={formData.confirmPassword}
-                          onChange={handleChange}
+              value={formData.confirmPassword}
+              onChange={handleChange}
               placeholder="Confirm password"
-              className="w-full border rounded-lg p-3 outline-none focus:ring-2 focus:ring-indigo-500"
+              required
+              className="w-full devhub-input p-3 text-sm"
             />
           </div>
-          {error && <p className="text-red-500 text-sm">{error}</p>}
 
-         <Button type="submit">
-  {loading ? "Signing up..." : "Sign Up"}
-</Button>
+          {error && <p className="text-[#EF4444] text-xs font-semibold bg-[#EF4444]/15 p-3 rounded-[12px] border border-[#EF4444]/30">{error}</p>}
+
+          <Button
+            type="submit"
+            disabled={loading}
+            className="w-full py-3.5 rounded-[12px] font-bold shadow-lg shadow-[#4F7CFF]/25 mt-2"
+          >
+            {loading ? "Signing up..." : "Sign Up & Get Started"}
+          </Button>
         </form>
 
-        <p className="text-center mt-6 text-gray-600">
+        <p className="text-center mt-6 text-xs text-[#94A3B8]">
           Already have an account?
-          <Link to="/login" className="text-indigo-600 ml-2">
+          <Link to="/login" className="text-[#38BDF8] font-bold ml-1 hover:underline">
             Login
           </Link>
         </p>

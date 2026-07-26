@@ -6,12 +6,11 @@ const Button = ({
   className = "",
   disabled = false,
 }) => {
-
   const variants = {
-    primary: "bg-indigo-600 text-white hover:bg-indigo-700",
-    secondary: "bg-gray-200 text-gray-800 hover:bg-gray-300",
-    danger: "bg-red-500 text-white hover:bg-red-600",
-    success: "bg-green-500 text-white hover:bg-green-600",
+    primary: "bg-[#4F7CFF] hover:bg-[#3B6EF6] text-white shadow-md shadow-[#4F7CFF]/20 hover:-translate-y-0.5",
+    secondary: "bg-transparent border border-[#334155] text-[#CBD5E1] hover:bg-[#4F7CFF]/15 hover:border-[#4F7CFF] hover:text-white",
+    danger: "bg-[#EF4444] hover:bg-[#DC2626] text-white shadow-md shadow-[#EF4444]/20",
+    success: "bg-[#22C55E] hover:bg-[#16A34A] text-white shadow-md shadow-[#22C55E]/20",
   };
 
   return (
@@ -21,12 +20,19 @@ const Button = ({
       onClick={onClick}
       className={`
         px-5
-        py-2
-        rounded-lg
-        font-medium
-        transition
+        py-2.5
+        rounded-[12px]
+        text-sm
+        font-semibold
+        transition-all
+        duration-200
         disabled:opacity-50
         disabled:cursor-not-allowed
+        disabled:hover:transform-none
+        flex
+        items-center
+        justify-center
+        gap-2
         ${variants[variant]}
         ${className}
       `}
