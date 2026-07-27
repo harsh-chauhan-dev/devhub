@@ -5,6 +5,7 @@ import {
   CheckSquare,
   FileText,
   BarChart3,
+  Calendar,
   Settings,
   LogOut,
   Sparkles,
@@ -13,6 +14,7 @@ import { useAuth } from "../../hooks/useAuth";
 
 const menu = [
   { name: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
+  { name: "Upcoming Schedule", icon: Calendar, path: "/schedules" },
   { name: "Todos", icon: CheckSquare, path: "/todo" },
   { name: "Notes", icon: FileText, path: "/notes" },
   { name: "Analytics", icon: BarChart3, path: "/analytics" },

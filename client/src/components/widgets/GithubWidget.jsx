@@ -3,19 +3,22 @@ import { ExternalLink, GitBranch, Users, Search } from "lucide-react";
 import Card from "../common/Card";
 import GithubIcon from "../common/GithubIcon";
 import { githubService } from "../../services/githubService";
+import { useAuth } from "../../hooks/useAuth";
 
 const GithubWidget = () => {
-  const [username, setUsername] = useState("harsh-chauhan-dev");
-  const [searchInput, setSearchInput] = useState("harsh-chauhan-dev");
+  const { user } = useAuth();
+  const activeUser = user?.githubUsername || "developer";
+  const [username, setUsername] = useState(activeUser);
+  const [searchInput, setSearchInput] = useState(activeUser);
   const [profile, setProfile] = useState(null);
   const [repos, setRepos] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchGithubData = async (user) => {
+  const fetchGithubData = async (targetUser) => {
     setLoading(true);
     try {
-      const p = await githubService.getUserProfile(user);
-      const r = await githubService.getUserRepos(user);
+      const p = await githubService.getUserProfile(targetUser);
+      const r = await githubService.getUserRepos(targetUser);
       setProfile(p);
       setRepos(r);
     } catch (err) {
@@ -26,8 +29,11 @@ const GithubWidget = () => {
   };
 
   useEffect(() => {
-    fetchGithubData("harsh-chauhan-dev");
-  }, []);
+    const handleUser = user?.githubUsername || "developer";
+    setUsername(handleUser);
+    setSearchInput(handleUser);
+    fetchGithubData(handleUser);
+  }, [user?.githubUsername]);
 
   const handleSearch = (e) => {
     e.preventDefault();

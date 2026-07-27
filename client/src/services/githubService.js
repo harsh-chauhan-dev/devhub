@@ -1,48 +1,50 @@
 // GitHub Integration Service
 
 export const githubService = {
-  getUserProfile: async (username = "harsh-chauhan-dev") => {
+  getUserProfile: async (username = "developer") => {
+    const handle = (username && username.trim()) || "developer";
     try {
-      const res = await fetch(`https://api.github.com/users/${username}`);
+      const res = await fetch(`https://api.github.com/users/${handle}`);
       if (!res.ok) {
-        throw new Error(`GitHub user '${username}' not found`);
+        throw new Error(`GitHub user '${handle}' not found`);
       }
       const data = await res.json();
       return {
-        username: data.login,
-        name: data.name || "Harsh Chauhan",
-        avatar: data.avatar_url || "https://avatars.githubusercontent.com/u/199341266?v=4",
-        bio: data.bio || "Full Stack Developer building web applications & system architectures",
-        publicRepos: data.public_repos ?? 18,
-        followers: data.followers ?? 12,
-        following: data.following ?? 8,
-        location: data.location || "Meerut, India",
-        htmlUrl: data.html_url || `https://github.com/${username}`,
+        username: data.login || handle,
+        name: data.name || data.login || handle,
+        avatar: data.avatar_url || `https://github.com/${handle}.png`,
+        bio: data.bio || `Developer profile (@${handle})`,
+        publicRepos: data.public_repos ?? 0,
+        followers: data.followers ?? 0,
+        following: data.following ?? 0,
+        location: data.location || "Developer Workspace",
+        htmlUrl: data.html_url || `https://github.com/${handle}`,
         company: data.company || "DevHub",
       };
     } catch (err) {
-      console.warn("GitHub API fetch fallback:", err.message);
+      console.warn("GitHub API profile fetch warning:", err.message);
       return {
-        username,
-        name: "Harsh Chauhan",
-        avatar: "https://avatars.githubusercontent.com/u/199341266?v=4",
-        bio: "Full Stack Developer building scalable web applications and learning system design.",
-        publicRepos: 18,
-        followers: 12,
-        following: 8,
-        location: "Meerut, India",
-        htmlUrl: `https://github.com/${username}`,
+        username: handle,
+        name: handle,
+        avatar: `https://github.com/${handle}.png`,
+        bio: `GitHub Developer (@${handle})`,
+        publicRepos: 0,
+        followers: 0,
+        following: 0,
+        location: "Developer Workspace",
+        htmlUrl: `https://github.com/${handle}`,
         company: "DevHub",
       };
     }
   },
 
-  getUserRepos: async (username = "harsh-chauhan-dev") => {
+  getUserRepos: async (username = "developer") => {
+    const handle = (username && username.trim()) || "developer";
     try {
-      const res = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=6`);
+      const res = await fetch(`https://api.github.com/users/${handle}/repos?sort=updated&per_page=6`);
       if (!res.ok) throw new Error("Failed to fetch repos");
       const repos = await res.json();
-      if (Array.isArray(repos) && repos.length > 0) {
+      if (Array.isArray(repos)) {
         return repos.map((r) => ({
           id: r.id,
           name: r.name,
@@ -55,36 +57,8 @@ export const githubService = {
         }));
       }
     } catch (err) {
-      console.warn("GitHub repos fallback:", err.message);
+      console.warn("GitHub repos fetch warning:", err.message);
     }
-    return [
-      {
-        id: 1,
-        name: "devhub",
-        description: "Developer productivity portal dashboard with React & Supabase",
-        stars: 12,
-        forks: 4,
-        language: "JavaScript",
-        url: `https://github.com/${username}/devhub`,
-      },
-      {
-        id: 2,
-        name: "backend_node-express",
-        description: "Node.js & Express RESTful microservices architecture",
-        stars: 8,
-        forks: 2,
-        language: "JavaScript",
-        url: `https://github.com/${username}`,
-      },
-      {
-        id: 3,
-        name: "12_month_plan",
-        description: "12 Month Full Stack Development & System Design Roadmap",
-        stars: 24,
-        forks: 6,
-        language: "JavaScript",
-        url: `https://github.com/${username}`,
-      },
-    ];
+    return [];
   },
 };

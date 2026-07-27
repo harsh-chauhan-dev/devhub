@@ -1,6 +1,5 @@
-import { createClient } from "@supabase/supabase-js";
+// DEPRECATED: Supabase client has been removed in favor of Node.js + Express REST API backend.
+// See BACKEND_README.md in the root directory for backend specifications.
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = null;
+export default supabase;

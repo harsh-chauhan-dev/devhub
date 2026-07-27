@@ -7,6 +7,7 @@ const Register = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    githubUsername: "",
     password: "",
     confirmPassword: "",
   });
@@ -36,6 +37,7 @@ const Register = () => {
       await register({
         name: formData.name,
         email: formData.email,
+        githubUsername: formData.githubUsername,
         password: formData.password,
       });
       navigate("/login");
@@ -79,6 +81,19 @@ const Register = () => {
               value={formData.email}
               onChange={handleChange}
               placeholder="Enter your email"
+              required
+              className="w-full devhub-input p-3 text-sm"
+            />
+          </div>
+
+          <div>
+            <label className="block mb-1.5 font-bold text-xs text-[#CBD5E1]">GitHub Profile URL or Username</label>
+            <input
+              type="text"
+              name="githubUsername"
+              value={formData.githubUsername}
+              onChange={handleChange}
+              placeholder="e.g. https://github.com/octocat or octocat"
               required
               className="w-full devhub-input p-3 text-sm"
             />

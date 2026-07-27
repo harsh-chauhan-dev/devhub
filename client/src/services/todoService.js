@@ -1,13 +1,13 @@
-import { supabase } from "./supabaseClient";
+import { fetchAPI } from "./api";
 
 const TODO_KEY = "devhub_todos";
 
 const INITIAL_TODOS = [
-  { id: "td_1", text: "Build DevHub Supabase Authentication API", completed: true, priority: "High", category: "Backend" },
+  { id: "td_1", text: "Build DevHub Node+Express REST Authentication API", completed: true, priority: "High", category: "Backend" },
   { id: "td_2", text: "Integrate GitHub & Weather Services", completed: true, priority: "High", category: "Frontend" },
   { id: "td_3", text: "Design responsive dark mode dashboard", completed: false, priority: "Medium", category: "UI/UX" },
-  { id: "td_4", text: "Setup PostgreSQL database schema in Supabase", completed: false, priority: "High", category: "Database" },
-  { id: "td_5", text: "Write unit tests for endpoints", completed: false, priority: "Low", category: "Testing" },
+  { id: "td_4", text: "Setup database schema (MongoDB/PostgreSQL) for Express backend", completed: false, priority: "High", category: "Database" },
+  { id: "td_5", text: "Write unit tests for REST API endpoints", completed: false, priority: "Low", category: "Testing" },
 ];
 
 export const todoService = {
@@ -20,17 +20,13 @@ export const todoService = {
     return JSON.parse(data);
   },
 
-  fetchFromSupabase: async () => {
+  fetchFromAPI: async () => {
     try {
-      const { data, error } = await supabase
-        .from("todos")
-        .select("*")
-        .order("created_at", { ascending: false });
+      const data = await fetchAPI("/todos");
 
-      if (error) throw error;
-      if (data && data.length > 0) {
+      if (data && Array.isArray(data) && data.length > 0) {
         const formatted = data.map((t) => ({
-          id: t.id,
+          id: t._id || t.id,
           text: t.text,
           completed: t.completed,
           priority: t.priority || "Medium",
@@ -40,7 +36,7 @@ export const todoService = {
         return formatted;
       }
     } catch (err) {
-      console.warn("Supabase fetch todos fallback:", err.message);
+      console.warn("Express Backend fetch todos offline fallback:", err.message);
     }
     return todoService.getTodos();
   },
@@ -56,20 +52,11 @@ export const todoService = {
       createdAt: new Date().toISOString(),
     };
 
-    // Async push to Supabase
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) {
-        supabase.from("todos").insert([
-          {
-            user_id: user.id,
-            text,
-            completed: false,
-            priority,
-            category,
-          },
-        ]).then();
-      }
-    });
+    // Async push to Express REST backend
+    fetchAPI("/todos", {
+      method: "POST",
+      body: { text, completed: false, priority, category },
+    }).catch((err) => console.warn("Sync todo to backend offline:", err.message));
 
     const updated = [newTodo, ...todos];
     localStorage.setItem(TODO_KEY, JSON.stringify(updated));
@@ -79,18 +66,17 @@ export const todoService = {
   toggleTodo: (id) => {
     const todos = todoService.getTodos();
     const target = todos.find((t) => t.id === id);
+    const newCompleted = target ? !target.completed : true;
+
     const updated = todos.map((t) =>
-      t.id === id ? { ...t, completed: !t.completed } : t
+      t.id === id ? { ...t, completed: newCompleted } : t
     );
 
-    // Async toggle in Supabase
-    if (target && typeof id !== "string" || !id.startsWith("td_")) {
-      supabase
-        .from("todos")
-        .update({ completed: !target.completed })
-        .eq("id", id)
-        .then();
-    }
+    // Async toggle in Express REST backend
+    fetchAPI(`/todos/${id}`, {
+      method: "PUT",
+      body: { completed: newCompleted },
+    }).catch((err) => console.warn("Toggle todo on backend offline:", err.message));
 
     localStorage.setItem(TODO_KEY, JSON.stringify(updated));
     return updated;
@@ -100,10 +86,10 @@ export const todoService = {
     const todos = todoService.getTodos();
     const updated = todos.filter((t) => t.id !== id);
 
-    // Async delete from Supabase
-    if (typeof id !== "string" || !id.startsWith("td_")) {
-      supabase.from("todos").delete().eq("id", id).then();
-    }
+    // Async delete from Express REST backend
+    fetchAPI(`/todos/${id}`, {
+      method: "DELETE",
+    }).catch((err) => console.warn("Delete todo from backend offline:", err.message));
 
     localStorage.setItem(TODO_KEY, JSON.stringify(updated));
     return updated;
@@ -113,7 +99,9 @@ export const todoService = {
     const todos = todoService.getTodos();
     const updated = todos.filter((t) => !t.completed);
 
-    supabase.from("todos").delete().eq("completed", true).then();
+    fetchAPI("/todos/completed", {
+      method: "DELETE",
+    }).catch((err) => console.warn("Clear completed todos on backend offline:", err.message));
 
     localStorage.setItem(TODO_KEY, JSON.stringify(updated));
     return updated;

@@ -1,4 +1,4 @@
-import { supabase } from "./supabaseClient";
+import { fetchAPI } from "./api";
 
 const NOTES_KEY = "devhub_notes";
 
@@ -6,7 +6,7 @@ const INITIAL_NOTES = [
   {
     id: "nt_1",
     title: "System Architecture Notes",
-    content: "Implement Supabase Auth and PostgreSQL database with Row Level Security (RLS) policies for user data isolation.",
+    content: "Implement RESTful APIs with Node.js, Express, and JWT Authentication for secure user data isolation.",
     tag: "Architecture",
     date: "2026-07-25",
   },
@@ -20,7 +20,7 @@ const INITIAL_NOTES = [
   {
     id: "nt_3",
     title: "DevHub Sprint Goals",
-    content: "Complete client service integration, Supabase backend configuration, and release v1.0.0 prototype.",
+    content: "Complete client service REST integration, Node.js + Express backend release, and deployment.",
     tag: "Sprint",
     date: "2026-07-26",
   },
@@ -36,27 +36,23 @@ export const notesService = {
     return JSON.parse(data);
   },
 
-  fetchFromSupabase: async () => {
+  fetchFromAPI: async () => {
     try {
-      const { data, error } = await supabase
-        .from("notes")
-        .select("*")
-        .order("created_at", { ascending: false });
+      const data = await fetchAPI("/notes");
 
-      if (error) throw error;
-      if (data && data.length > 0) {
+      if (data && Array.isArray(data) && data.length > 0) {
         const formatted = data.map((n) => ({
-          id: n.id,
+          id: n._id || n.id,
           title: n.title,
           content: n.content,
           tag: n.tag || "General",
-          date: new Date(n.created_at).toISOString().split("T")[0],
+          date: n.createdAt ? new Date(n.createdAt).toISOString().split("T")[0] : new Date().toISOString().split("T")[0],
         }));
         localStorage.setItem(NOTES_KEY, JSON.stringify(formatted));
         return formatted;
       }
     } catch (err) {
-      console.warn("Supabase fetch notes fallback:", err.message);
+      console.warn("Express Backend fetch notes offline fallback:", err.message);
     }
     return notesService.getNotes();
   },
@@ -71,19 +67,11 @@ export const notesService = {
       date: new Date().toISOString().split("T")[0],
     };
 
-    // Async push to Supabase
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) {
-        supabase.from("notes").insert([
-          {
-            user_id: user.id,
-            title,
-            content,
-            tag,
-          },
-        ]).then();
-      }
-    });
+    // Async push to Express REST Backend
+    fetchAPI("/notes", {
+      method: "POST",
+      body: { title, content, tag },
+    }).catch((err) => console.warn("Sync note to backend offline:", err.message));
 
     const updated = [newNote, ...notes];
     localStorage.setItem(NOTES_KEY, JSON.stringify(updated));
@@ -96,10 +84,11 @@ export const notesService = {
       n.id === id ? { ...n, title, content, tag: tag || n.tag } : n
     );
 
-    // Async update in Supabase
-    if (typeof id !== "string" || !id.startsWith("nt_")) {
-      supabase.from("notes").update({ title, content, tag }).eq("id", id).then();
-    }
+    // Async update in Express REST Backend
+    fetchAPI(`/notes/${id}`, {
+      method: "PUT",
+      body: { title, content, tag },
+    }).catch((err) => console.warn("Update note on backend offline:", err.message));
 
     localStorage.setItem(NOTES_KEY, JSON.stringify(updated));
     return updated;
@@ -109,10 +98,10 @@ export const notesService = {
     const notes = notesService.getNotes();
     const updated = notes.filter((n) => n.id !== id);
 
-    // Async delete from Supabase
-    if (typeof id !== "string" || !id.startsWith("nt_")) {
-      supabase.from("notes").delete().eq("id", id).then();
-    }
+    // Async delete from Express REST Backend
+    fetchAPI(`/notes/${id}`, {
+      method: "DELETE",
+    }).catch((err) => console.warn("Delete note from backend offline:", err.message));
 
     localStorage.setItem(NOTES_KEY, JSON.stringify(updated));
     return updated;

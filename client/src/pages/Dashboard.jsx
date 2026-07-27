@@ -10,7 +10,7 @@ import { Sparkles, Calendar as CalendarIcon, GitCommit, CheckCircle2, FileCode }
 
 const recentActivities = [
   { id: 1, icon: GitCommit, title: "Pushed 3 commits to harsh-chauhan-dev/devhub", time: "15 mins ago", color: "text-[#38BDF8]" },
-  { id: 2, icon: CheckCircle2, title: "Completed task: Setup PostgreSQL database schema in Supabase", time: "42 mins ago", color: "text-[#22C55E]" },
+  { id: 2, icon: CheckCircle2, title: "Completed task: Setup REST API endpoints in Node+Express", time: "42 mins ago", color: "text-[#22C55E]" },
   { id: 3, icon: FileCode, title: "Created new note: System Architecture Notes", time: "2 hrs ago", color: "text-[#8B5CF6]" },
 ];
 

@@ -39,7 +39,7 @@ const Landing = () => {
             <a href="#features" className="hover:text-[#4F7CFF] transition">Features</a>
             <a href="#preview" className="hover:text-[#4F7CFF] transition">Live Dashboard</a>
             <a href="#stack" className="hover:text-[#4F7CFF] transition">Tech Stack</a>
-            <a href="#supabase" className="hover:text-[#4F7CFF] transition">Supabase Backend</a>
+            <a href="#express-backend" className="hover:text-[#4F7CFF] transition">Node+Express Backend</a>
           </nav>
 
           <div className="flex items-center gap-3">
@@ -107,7 +107,7 @@ const Landing = () => {
             {/* Quick Badges */}
             <div className="flex items-center gap-6 pt-4 text-xs font-semibold text-[var(--text-muted)] border-t border-[var(--border)]">
               <span className="flex items-center gap-1.5">
-                <ShieldCheck size={16} className="text-[#22C55E]" /> Supabase Auth & RLS
+                <ShieldCheck size={16} className="text-[#22C55E]" /> Express JWT Auth
               </span>
               <span className="flex items-center gap-1.5">
                 <GithubIcon size={16} className="text-[#38BDF8]" /> Live GitHub API Sync
@@ -140,7 +140,7 @@ const Landing = () => {
                     <span className="text-[#8B5CF6]">const</span> dev = <span className="text-[#22C55E]">await</span> fetchUser(<span className="text-[#F59E0B]">"harsh-chauhan-dev"</span>);
                   </p>
                   <p className="text-[var(--text-muted)]">
-                    // Status: 200 OK • 18 Repositories • Supabase RLS Active
+                    // Status: 200 OK • 18 Repositories • Express REST API Active
                   </p>
                 </div>
 
@@ -150,8 +150,8 @@ const Landing = () => {
                     <h4 className="font-bold text-sm text-[#4F7CFF] mt-0.5">harsh-chauhan-dev</h4>
                   </div>
                   <div className="p-3 bg-[var(--bg-sec)] rounded-[12px] border border-[var(--border)]">
-                    <p className="text-[11px] text-[var(--text-muted)] font-semibold">Supabase Backend</p>
-                    <h4 className="font-bold text-sm text-[#22C55E] mt-0.5">PostgreSQL Cloud</h4>
+                    <p className="text-[11px] text-[var(--text-muted)] font-semibold">Node+Express Backend</p>
+                    <h4 className="font-bold text-sm text-[#22C55E] mt-0.5">REST Service</h4>
                   </div>
                 </div>
 
@@ -202,7 +202,7 @@ const Landing = () => {
               Sprint Task Manager
             </h3>
             <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-              Prioritize tasks with High, Medium, and Low pills, filter by domain tags (Frontend, Backend, DB), and sync to Supabase.
+              Prioritize tasks with High, Medium, and Low pills, filter by domain tags (Frontend, Backend, DB), and sync to Express REST API.
             </p>
           </div>
 
@@ -230,15 +230,15 @@ const Landing = () => {
             </p>
           </div>
 
-          <div className="devhub-card p-6" id="supabase">
+          <div className="devhub-card p-6" id="express-backend">
             <div className="p-3 rounded-[12px] bg-[#10B981]/15 text-[#10B981] w-fit mb-4">
               <Database size={22} />
             </div>
             <h3 className="text-lg font-bold text-[var(--text-primary)] mb-2">
-              Supabase Cloud Backend
+              Node.js + Express REST API
             </h3>
             <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-              Secure authentication, PostgreSQL table storage, and Row Level Security (RLS) policies for user data isolation.
+              Secure JWT authentication, CORS enabled RESTful endpoints, and database models for full data isolation.
             </p>
           </div>
 
@@ -266,7 +266,7 @@ const Landing = () => {
           <span className="flex items-center gap-2"><Code2 size={18} className="text-[#38BDF8]" /> React 19</span>
           <span className="flex items-center gap-2"><Zap size={18} className="text-[#F59E0B]" /> Vite</span>
           <span className="flex items-center gap-2"><Sparkles size={18} className="text-[#4F7CFF]" /> Tailwind CSS v4</span>
-          <span className="flex items-center gap-2"><Database size={18} className="text-[#22C55E]" /> Supabase</span>
+          <span className="flex items-center gap-2"><Database size={18} className="text-[#22C55E]" /> Node.js & Express</span>
           <span className="flex items-center gap-2"><GithubIcon size={18} className="text-[#CBD5E1]" /> GitHub API</span>
         </div>
       </section>

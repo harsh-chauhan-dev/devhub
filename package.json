@@ -1,7 +1,14 @@
 {
-  "dependencies": {
-    "@tailwindcss/vite": "^4.3.3",
-    "lucide-react": "^1.26.0",
-    "tailwindcss": "^4.3.3"
+  "name": "devhub-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev --prefix client\" \"npm run dev --prefix server\"",
+    "dev:client": "npm run dev --prefix client",
+    "dev:server": "npm run dev --prefix server",
+    "install:all": "npm install --prefix client && npm install --prefix server"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
   }
 }

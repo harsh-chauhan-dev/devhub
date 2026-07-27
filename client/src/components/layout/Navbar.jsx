@@ -1,14 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Bell, Moon, Search, Sun, X, Sparkles } from "lucide-react";
 import { useTheme } from "../../hooks/useTheme";
 import { useAuth } from "../../hooks/useAuth";
 import { Link, useNavigate } from "react-router-dom";
+import { notificationService } from "../../services/notificationService";
 
-const initialNotifications = [
-  { id: 1, message: "Welcome to DevHub! Theme switcher active.", time: "Just now" },
-  { id: 2, message: "GitHub profile harsh-chauhan-dev synced.", time: "10 mins ago" },
-  { id: 3, message: "Supabase cloud database connected.", time: "1 hr ago" },
-];
+// Helper utility to parse clean GitHub handle from full URL or string
+const parseGithubHandle = (input) => {
+  if (!input || typeof input !== "string") return "harsh-chauhan-dev";
+  let str = input.trim().replace(/\/+$/, "");
+  if (str.includes("github.com/")) {
+    const parts = str.split("github.com/");
+    str = parts[parts.length - 1].split("/")[0];
+  }
+  return str.replace(/^@/, "").trim() || "harsh-chauhan-dev";
+};
 
 const Navbar = () => {
   const { darkMode, toggleTheme } = useTheme();
@@ -16,7 +22,25 @@ const Navbar = () => {
   const navigate = useNavigate();
   const [searchText, setSearchText] = useState("");
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const [notifications, setNotifications] = useState(initialNotifications);
+  const [notifications, setNotifications] = useState([]);
+
+  const cleanHandle = parseGithubHandle(user?.githubUsername);
+  const navAvatar = user?.githubUsername ? `https://github.com/${cleanHandle}.png` : (user?.avatar || "https://avatars.githubusercontent.com/u/199341266?v=4");
+
+  const fetchLiveNotifications = async () => {
+    try {
+      const data = await notificationService.getNotifications();
+      setNotifications(data);
+    } catch (err) {
+      console.warn("Error fetching live notifications:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchLiveNotifications();
+    const interval = setInterval(fetchLiveNotifications, 10000);
+    return () => clearInterval(interval);
+  }, [user?.id]);
 
   const handleSearchSubmit = (event) => {
     event.preventDefault();
@@ -30,9 +54,12 @@ const Navbar = () => {
     else navigate("/dashboard");
   };
 
-  const handleDismissNotification = (id) => {
+  const handleDismissNotification = async (id) => {
     setNotifications((prev) => prev.filter((item) => item.id !== id));
+    await notificationService.markAsRead(id);
   };
+
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
     <header className="sticky top-0 z-50 bg-[var(--bg-main)]/90 backdrop-blur-md border-b border-[var(--border)] transition-colors duration-300">
@@ -65,7 +92,7 @@ const Navbar = () => {
 
         {/* Right actions */}
         <div className="flex items-center gap-3 relative">
-          {/* Theme Toggle Button (Sun/Moon) */}
+          {/* Theme Toggle Button */}
           <button
             type="button"
             onClick={toggleTheme}
@@ -88,16 +115,18 @@ const Navbar = () => {
               title="Notifications"
             >
               <Bell size={18} />
-              {notifications.length > 0 && (
-                <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-[#38BDF8] ring-2 ring-[var(--bg-main)] animate-pulse"></span>
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#EF4444] text-[9px] font-bold text-white ring-2 ring-[var(--bg-main)] animate-pulse">
+                  {unreadCount}
+                </span>
               )}
             </button>
 
             {isNotificationsOpen && (
-              <div className="absolute right-0 mt-3 w-80 rounded-[16px] bg-[var(--bg-card)] border border-[var(--border)] shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden z-50">
-                <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border)]">
+              <div className="absolute right-0 mt-3 w-84 rounded-[16px] bg-[var(--bg-card)] border border-[var(--border)] shadow-[0_20px_50px_rgba(0,0,0,0.4)] overflow-hidden z-50">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border)] bg-[var(--bg-sec)]">
                   <span className="font-bold text-xs text-[var(--text-primary)] flex items-center gap-1.5">
-                    <Sparkles size={14} className="text-[#38BDF8]" /> Notifications ({notifications.length})
+                    <Sparkles size={14} className="text-[#38BDF8]" /> Live Database Notifications ({notifications.length})
                   </span>
                   <button
                     onClick={() => setIsNotificationsOpen(false)}
@@ -106,19 +135,21 @@ const Navbar = () => {
                     <X size={16} />
                   </button>
                 </div>
+
                 {notifications.length === 0 ? (
-                  <p className="p-4 text-xs text-center text-[var(--text-muted)]">No new notifications</p>
+                  <p className="p-6 text-xs text-center text-[var(--text-muted)]">No new notifications</p>
                 ) : (
                   <ul className="divide-y divide-[var(--border)] max-h-64 overflow-y-auto">
                     {notifications.map((item) => (
-                      <li key={item.id} className="p-3 hover:bg-[var(--bg-sec)] transition flex justify-between gap-2">
+                      <li key={item.id} className={`p-3.5 hover:bg-[var(--bg-sec)] transition flex justify-between gap-2 ${!item.read ? 'bg-[#4F7CFF]/5 border-l-2 border-[#4F7CFF]' : ''}`}>
                         <div>
-                          <p className="text-xs text-[var(--text-secondary)] font-medium">{item.message}</p>
-                          <span className="text-[10px] text-[var(--text-muted)] mt-1 block">{item.time}</span>
+                          <p className="text-xs text-[var(--text-secondary)] font-medium leading-snug">{item.message}</p>
+                          <span className="text-[10px] text-[var(--text-muted)] mt-1 block font-mono">{item.time}</span>
                         </div>
                         <button
                           onClick={() => handleDismissNotification(item.id)}
                           className="text-[var(--text-muted)] hover:text-[#EF4444] self-start"
+                          title="Dismiss"
                         >
                           <X size={12} />
                         </button>
@@ -136,16 +167,16 @@ const Navbar = () => {
             className="flex items-center gap-3 p-1 rounded-[12px] hover:bg-[var(--bg-card)] border border-transparent hover:border-[var(--border)] transition duration-200"
           >
             <img
-              src={user?.avatar || "https://avatars.githubusercontent.com/u/199341266?v=4"}
-              alt={user?.name || "Harsh Chauhan"}
+              src={navAvatar}
+              alt={user?.name || "User"}
               className="h-9 w-9 rounded-[10px] object-cover ring-2 ring-[#4F7CFF]/40"
             />
             <div className="hidden sm:block text-left pr-2">
               <p className="font-bold text-xs text-[var(--text-primary)] leading-tight">
-                {user?.name || "Harsh Chauhan"}
+                {user?.name || "User Profile"}
               </p>
               <p className="text-[11px] text-[var(--text-muted)] leading-tight">
-                {user?.role || "Developer"}
+                @{cleanHandle}
               </p>
             </div>
           </Link>

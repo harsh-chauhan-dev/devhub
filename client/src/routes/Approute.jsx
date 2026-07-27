@@ -10,6 +10,7 @@ import Settings from "../pages/Setting";
 import Todo from "../pages/Todo";
 import Notes from "../pages/Notes";
 import Analytics from "../pages/Analytics";
+import Schedules from "../pages/Schedules";
 import DashboardLayout from "../components/layout/DashboardLayout";
 import Loader from "../components/common/Loader";
 import { useAuth } from "../hooks/useAuth";
@@ -44,6 +45,7 @@ const Approute = () => {
         }
       >
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/schedules" element={<Schedules />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/todo" element={<Todo />} />
