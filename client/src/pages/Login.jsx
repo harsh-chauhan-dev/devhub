@@ -73,7 +73,16 @@ const Login = () => {
             />
           </div>
 
-          {error && <p className="text-[#EF4444] text-xs font-semibold bg-[#EF4444]/15 p-3 rounded-[12px] border border-[#EF4444]/30">{error}</p>}
+          {error && (
+            <div className="bg-[#EF4444]/15 p-3 rounded-[12px] border border-[#EF4444]/30 space-y-1">
+              <p className="text-[#EF4444] text-xs font-semibold">{error}</p>
+              {error.toLowerCase().includes("verify") && (
+                <Link to="/verify-email" className="text-[#38BDF8] text-xs font-bold hover:underline block pt-1">
+                  Click here to request a new verification email →
+                </Link>
+              )}
+            </div>
+          )}
 
           <Button
             type="submit"

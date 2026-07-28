@@ -10,7 +10,25 @@ export function AuthProvider({ children }) {
       return null;
     }
   });
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const initAuth = async () => {
+      try {
+        const currentUser = await authService.getMe();
+        if (currentUser) {
+          setUser(currentUser);
+        } else {
+          setUser(null);
+        }
+      } catch (err) {
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    initAuth();
+  }, []);
 
   const login = async (credentials) => {
     setLoading(true);
@@ -26,9 +44,8 @@ export function AuthProvider({ children }) {
   const register = async (userData) => {
     setLoading(true);
     try {
-      const { user: registeredUser } = await authService.register(userData);
-      setUser(registeredUser);
-      return registeredUser;
+      const res = await authService.register(userData);
+      return res;
     } finally {
       setLoading(false);
     }

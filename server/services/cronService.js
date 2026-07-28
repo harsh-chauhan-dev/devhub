@@ -1,51 +1,13 @@
 import cron from "node-cron";
 import { queryDB, isPgConnected } from "../config/db.js";
-import { sendNotificationEmail } from "./mailService.js";
+import { sendScheduleReminderEmail } from "./mailService.js";
 
 export const initCronJobs = () => {
-  // console.log("⏰ Initializing node-cron background scheduled tasks...");
-
-  // Schedule background task runner to check pending sprint tasks & upcoming schedules every 5 minutes
   cron.schedule("*/5 * * * *", async () => {
-    // console.log("🔍 [Cron Job] Running automated schedule check and email dispatcher...");
-
     try {
       if (isPgConnected) {
-        // 1. Query users with pending todos
-        const todoResult = await queryDB(`
-          SELECT u.id, u.name, u.email, COUNT(t.id) as pending_count
-          FROM users u
-          JOIN todos t ON u.id = t.user_id
-          WHERE t.completed = false
-          GROUP BY u.id, u.name, u.email
-        `);
-
-        for (const userRow of todoResult.rows) {
-          if (userRow.pending_count > 0) {
-            // console.log(`📩 Dispatching automated scheduled task email to ${userRow.email}...`);
-
-            await queryDB(
-              `INSERT INTO notifications (user_id, message, type) VALUES ($1, $2, $3)`,
-              [
-                userRow.id,
-                `⏰ Automated Schedule Reminder: You have ${userRow.pending_count} pending sprint task${userRow.pending_count > 1 ? "s" : ""} waiting in your backlog!`,
-                "reminder",
-              ]
-            ).catch(() => {});
-
-            await sendNotificationEmail({
-              to: userRow.email,
-              subject: `⏰ Scheduled Sprint Reminder — ${userRow.pending_count} Pending Tasks`,
-              title: `Hi ${userRow.name}, your sprint schedule update is ready!`,
-              body: `Don't forget your scheduled sprint goals. You currently have <strong>${userRow.pending_count} pending task${userRow.pending_count > 1 ? "s" : ""}</strong> waiting in your DevHub workspace dashboard.`,
-              actionUrl: "http://localhost:5173/todo",
-            }).catch((err) => console.warn("Cron email dispatch warning:", err.message));
-          }
-        }
-
-        // 2. Query upcoming PostgreSQL schedules due soon
         const scheduleRes = await queryDB(`
-          SELECT s.id, s.title, s.scheduled_date, u.id as user_id, u.name, u.email
+          SELECT s.id, s.title, s.description, s.scheduled_date, s.notify_email, u.id as user_id, u.name, u.email
           FROM schedules s
           JOIN users u ON s.user_id = u.id
           WHERE s.status = 'Scheduled' AND s.scheduled_date <= NOW() + INTERVAL '1 hour'
@@ -59,24 +21,34 @@ export const initCronJobs = () => {
             minute: "2-digit",
           });
 
+          // 1. Send In-App Site Notification
           await queryDB(
             `INSERT INTO notifications (user_id, message, type) VALUES ($1, $2, $3)`,
             [sRow.user_id, `⏰ Upcoming Schedule Alert: "${sRow.title}" set for ${dateFormatted}!`, "reminder"]
           ).catch(() => {});
 
-          await sendNotificationEmail({
-            to: sRow.email,
-            subject: `⏰ Upcoming Schedule Event: ${sRow.title}`,
-            title: `Scheduled Event Reminder`,
-            body: `Hi <strong>${sRow.name}</strong>,<br><br>Your scheduled event <strong>"${sRow.title}"</strong> is coming up on <strong>${dateFormatted}</strong>.`,
-            actionUrl: "http://localhost:5173/schedules",
-          }).catch((err) => console.warn("Schedule cron email error:", err.message));
+          if (sRow.notify_email !== false && sRow.email) {
+            await sendScheduleReminderEmail({
+              to: sRow.email,
+              name: sRow.name,
+              title: sRow.title,
+              scheduledDate: dateFormatted,
+              description: sRow.description,
+              actionUrl: "http://localhost:5173/schedules",
+            }).catch(() => {});
+          }
+
+          // 3. Mark schedule status as 'Notified' so notifications are dispatched only once
+          await queryDB(
+            `UPDATE schedules SET status = 'Notified' WHERE id = $1`,
+            [sRow.id]
+          ).catch(() => {});
         }
       }
     } catch (err) {
-      // console.error("❌ [Cron Job Error]:", err.message);
+     
     }
   });
 
-  // console.log("✅ Node-cron background schedule tasks active (running every 5 mins).");
+ 
 };

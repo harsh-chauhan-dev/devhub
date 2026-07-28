@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Bell, Moon, Search, Sun, X, Sparkles } from "lucide-react";
+import { Bell, Moon, Search, Sun, X, Sparkles, CheckSquare, FileText } from "lucide-react";
 import { useTheme } from "../../hooks/useTheme";
 import { useAuth } from "../../hooks/useAuth";
 import { Link, useNavigate } from "react-router-dom";
@@ -56,7 +56,28 @@ const Navbar = () => {
 
   const handleDismissNotification = async (id) => {
     setNotifications((prev) => prev.filter((item) => item.id !== id));
-    await notificationService.markAsRead(id);
+    await notificationService.deleteNotification(id);
+  };
+
+  const handleClearAllNotifications = async () => {
+    setNotifications([]);
+    await notificationService.clearAllNotifications();
+  };
+
+  const handleToggleNotifications = async () => {
+    const nextOpen = !isNotificationsOpen;
+    setIsNotificationsOpen(nextOpen);
+    if (nextOpen && unreadCount > 0) {
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+      await notificationService.markAllAsRead();
+    }
+  };
+
+  const handleItemClick = async (item) => {
+    if (!item.read) {
+      setNotifications((prev) => prev.map((n) => (n.id === item.id ? { ...n, read: true } : n)));
+      await notificationService.markAsRead(item.id);
+    }
   };
 
   const unreadCount = notifications.filter((n) => !n.read).length;
@@ -88,7 +109,25 @@ const Navbar = () => {
         </div>
 
         {/* Right actions */}
-        <div className="flex items-center gap-3 relative">
+        <div className="flex items-center gap-4">
+          {/* Action shortcut pills */}
+          <div className="hidden sm:flex items-center gap-2">
+            <Link
+              to="/todo"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[var(--text-secondary)] bg-[var(--bg-card)] hover:bg-[var(--bg-sec)] border border-[var(--border)] rounded-[10px] transition duration-200"
+            >
+              <CheckSquare size={13} className="text-[#38BDF8]" />
+              Tasks
+            </Link>
+            <Link
+              to="/notes"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[var(--text-secondary)] bg-[var(--bg-card)] hover:bg-[var(--bg-sec)] border border-[var(--border)] rounded-[10px] transition duration-200"
+            >
+              <FileText size={13} className="text-[#818CF8]" />
+              Notes
+            </Link>
+          </div>
+
           {/* Theme Toggle Button */}
           <button
             type="button"
@@ -107,7 +146,7 @@ const Navbar = () => {
           <div className="relative">
             <button
               type="button"
-              onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+              onClick={handleToggleNotifications}
               className="relative p-2.5 rounded-[12px] border border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-primary)] hover:border-[#4F7CFF] transition duration-200"
               title="Notifications"
             >
@@ -125,12 +164,23 @@ const Navbar = () => {
                   <span className="font-bold text-xs text-[var(--text-primary)] flex items-center gap-1.5">
                     <Sparkles size={14} className="text-[#38BDF8]" /> Live Database Notifications ({notifications.length})
                   </span>
-                  <button
-                    onClick={() => setIsNotificationsOpen(false)}
-                    className="text-[var(--text-muted)] hover:text-[var(--text-primary)]"
-                  >
-                    <X size={16} />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    {notifications.length > 0 && (
+                      <button
+                        onClick={handleClearAllNotifications}
+                        className="text-[10px] text-[#38BDF8] hover:underline font-semibold"
+                        title="Clear all notifications"
+                      >
+                        Clear All
+                      </button>
+                    )}
+                    <button
+                      onClick={() => setIsNotificationsOpen(false)}
+                      className="text-[var(--text-muted)] hover:text-[var(--text-primary)] ml-1"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
                 </div>
 
                 {notifications.length === 0 ? (
@@ -138,13 +188,20 @@ const Navbar = () => {
                 ) : (
                   <ul className="divide-y divide-[var(--border)] max-h-64 overflow-y-auto">
                     {notifications.map((item) => (
-                      <li key={item.id} className={`p-3.5 hover:bg-[var(--bg-sec)] transition flex justify-between gap-2 ${!item.read ? 'bg-[#4F7CFF]/5 border-l-2 border-[#4F7CFF]' : ''}`}>
+                      <li
+                        key={item.id}
+                        onClick={() => handleItemClick(item)}
+                        className={`p-3.5 hover:bg-[var(--bg-sec)] transition flex justify-between gap-2 cursor-pointer ${!item.read ? 'bg-[#4F7CFF]/5 border-l-2 border-[#4F7CFF]' : ''}`}
+                      >
                         <div>
                           <p className="text-xs text-[var(--text-secondary)] font-medium leading-snug">{item.message}</p>
                           <span className="text-[10px] text-[var(--text-muted)] mt-1 block font-mono">{item.time}</span>
                         </div>
                         <button
-                          onClick={() => handleDismissNotification(item.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDismissNotification(item.id);
+                          }}
                           className="text-[var(--text-muted)] hover:text-[#EF4444] self-start"
                           title="Dismiss"
                         >

@@ -14,6 +14,19 @@ export const authService = {
     }
   },
 
+  getMe: async () => {
+    try {
+      const user = await fetchAPI("/auth/me");
+      if (user && user.id) {
+        localStorage.setItem(AUTH_KEY, JSON.stringify(user));
+        return user;
+      }
+    } catch (err) {
+      localStorage.removeItem(AUTH_KEY);
+    }
+    return null;
+  },
+
   login: async ({ email, password }) => {
     if (!email || !password) {
       throw new Error("Please enter both email and password");
@@ -24,10 +37,9 @@ export const authService = {
       body: { email, password },
     });
 
-    const { user, token } = response;
+    const { user } = response;
     localStorage.setItem(AUTH_KEY, JSON.stringify(user));
-    localStorage.setItem(TOKEN_KEY, token);
-    return { user, token };
+    return { user };
   },
 
   register: async ({ name, email, password, githubUsername }) => {
@@ -40,10 +52,21 @@ export const authService = {
       body: { name, email, password, githubUsername },
     });
 
-    const { user, token } = response;
-    localStorage.setItem(AUTH_KEY, JSON.stringify(user));
-    localStorage.setItem(TOKEN_KEY, token);
-    return { user, token };
+    return response;
+  },
+
+  verifyEmail: async (token) => {
+    return await fetchAPI("/auth/verify-email", {
+      method: "POST",
+      body: { token },
+    });
+  },
+
+  resendVerification: async (email) => {
+    return await fetchAPI("/auth/resend-verification", {
+      method: "POST",
+      body: { email },
+    });
   },
 
   updateProfile: async (updatedFields) => {

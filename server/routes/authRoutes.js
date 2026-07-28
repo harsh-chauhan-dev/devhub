@@ -2,6 +2,9 @@ import express from "express";
 import {
   registerUser,
   loginUser,
+  verifyEmail,
+  resendVerificationEmail,
+  logoutUser,
   getMe,
   updateProfile,
 } from "../controllers/authController.js";
@@ -10,9 +13,12 @@ import { protect } from "../middleware/authMiddleware.js";
 const router = express.Router();
 
 router.post("/register", registerUser);
+router.get("/verify-email", verifyEmail);
+router.post("/verify-email", verifyEmail);
+router.post("/resend-verification", resendVerificationEmail);
 router.post("/login", loginUser);
+router.post("/logout", logoutUser);
 router.get("/me", protect, getMe);
 router.put("/profile", protect, updateProfile);
-router.post("/logout", (req, res) => res.json({ message: "Logged out successfully" }));
 
 export default router;

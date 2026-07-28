@@ -14,6 +14,7 @@ export const fetchAPI = async (endpoint, options = {}) => {
   const config = {
     method: options.method || "GET",
     headers,
+    credentials: "include",
     ...(options.body ? { body: JSON.stringify(options.body) } : {}),
   };
 

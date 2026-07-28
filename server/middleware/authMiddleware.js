@@ -1,15 +1,25 @@
 import jwt from "jsonwebtoken";
 import { queryDB, isPgConnected } from "../config/db.js";
 
-export const protect = async (req, res, next) => {
-  let token;
+const parseCookies = (req) => {
+  if (!req.headers.cookie) return {};
+  return req.headers.cookie.split(";").reduce((acc, cookieStr) => {
+    const [key, ...val] = cookieStr.trim().split("=");
+    if (key) acc[key] = val.join("=");
+    return acc;
+  }, {});
+};
 
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
-  ) {
+export const protect = async (req, res, next) => {
+  const cookies = parseCookies(req);
+  let token = cookies.token;
+
+  if (!token && req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
+    token = req.headers.authorization.split(" ")[1];
+  }
+
+  if (token) {
     try {
-      token = req.headers.authorization.split(" ")[1];
       const decoded = jwt.verify(
         token,
         process.env.JWT_SECRET || "super_secret_jwt_key_devhub_2026"
@@ -45,6 +55,6 @@ export const protect = async (req, res, next) => {
       return res.status(401).json({ message: "Not authorized, token failed" });
     }
   } else {
-    return res.status(401).json({ message: "Not authorized, no token provided" });
+    return res.status(401).json({ message: "Not authorized, no token cookie provided" });
   }
 };

@@ -14,7 +14,7 @@ export const getTodos = async (req, res) => {
       return res.json(result.rows);
     }
   } catch (error) {
-    console.error("PG getTodos Error:", error.message);
+    // Handled silently
   }
 
   res.json([]);
@@ -40,28 +40,9 @@ export const createTodo = async (req, res) => {
       );
 
       const createdItem = result.rows[0];
-
-      // 1. Automatic PostgreSQL Notification Record
-      await queryDB(
-        `INSERT INTO notifications (user_id, message, type) VALUES ($1, $2, $3)`,
-        [req.user.id, `New task created: "${text}" (${priority || "Medium"} Priority)`, "todo"]
-      ).catch(() => {});
-
-      // 2. Automatic Email Dispatch via Nodemailer
-      if (req.user.email) {
-        sendNotificationEmail({
-          to: req.user.email,
-          subject: `📌 New Sprint Task: ${text.slice(0, 30)}...`,
-          title: `Task Added to Your Sprint Backlog`,
-          body: `You added a new <strong>${priority || "Medium"} Priority</strong> task to your DevHub dashboard:<br><br><em>"${text}"</em>`,
-          actionUrl: "http://localhost:5173/todo",
-        }).catch((err) => console.warn("Task notification email error:", err.message));
-      }
-
       return res.status(201).json(createdItem);
     }
   } catch (error) {
-    console.error("PG createTodo Error:", error.message);
     return res.status(500).json({ message: "Failed to create task in PostgreSQL" });
   }
 
@@ -92,7 +73,7 @@ export const updateTodo = async (req, res) => {
       }
     }
   } catch (error) {
-    console.error("PG updateTodo Error:", error.message);
+    // Handled silently
   }
 
   res.json({ message: "Todo updated" });
@@ -110,7 +91,7 @@ export const deleteTodo = async (req, res) => {
       return res.json({ message: "Todo deleted successfully" });
     }
   } catch (error) {
-    console.error("PG deleteTodo Error:", error.message);
+    // Handled silently
   }
 
   res.json({ message: "Todo removed" });
@@ -126,7 +107,7 @@ export const clearCompletedTodos = async (req, res) => {
       return res.json({ message: "Completed todos cleared" });
     }
   } catch (error) {
-    console.error("PG clearCompletedTodos Error:", error.message);
+    // Handled silently
   }
 
   res.json({ message: "Completed todos cleared" });

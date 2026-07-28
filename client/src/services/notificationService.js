@@ -28,6 +28,30 @@ export const notificationService = {
     }
   },
 
+  markAllAsRead: async () => {
+    try {
+      await fetchAPI("/notifications/read-all", { method: "PUT" });
+    } catch (err) {
+      console.warn("Mark all notifications read warning:", err.message);
+    }
+  },
+
+  deleteNotification: async (id) => {
+    try {
+      await fetchAPI(`/notifications/${id}`, { method: "DELETE" });
+    } catch (err) {
+      console.warn("Delete notification warning:", err.message);
+    }
+  },
+
+  clearAllNotifications: async () => {
+    try {
+      await fetchAPI("/notifications", { method: "DELETE" });
+    } catch (err) {
+      console.warn("Clear all notifications warning:", err.message);
+    }
+  },
+
   triggerScheduleCheck: async () => {
     try {
       return await fetchAPI("/notifications/schedule-check", { method: "POST" });

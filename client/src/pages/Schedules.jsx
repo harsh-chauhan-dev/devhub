@@ -50,7 +50,7 @@ const Schedules = () => {
         setErrorMsg(res.message);
         return;
       }
-      setSuccessMsg("Upcoming schedule created! Notification & email alert dispatched.");
+      setSuccessMsg("Upcoming schedule created! Confirmation email dispatched to your inbox.");
       setFormData({
         title: "",
         description: "",

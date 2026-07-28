@@ -23,7 +23,19 @@ initDB();
 initCronJobs();
 
 // Middleware
-app.use(cors({ origin: "*", credentials: true }));
+const allowedOrigins = ["http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173"];
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin) || origin.startsWith("http://localhost")) {
+        callback(null, true);
+      } else {
+        callback(null, origin);
+      }
+    },
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 // API Routes

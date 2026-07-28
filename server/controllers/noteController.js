@@ -14,7 +14,7 @@ export const getNotes = async (req, res) => {
       return res.json(result.rows);
     }
   } catch (error) {
-    console.error("PG getNotes Error:", error.message);
+    // Handled silently
   }
 
   res.json([]);
@@ -40,28 +40,9 @@ export const createNote = async (req, res) => {
       );
 
       const createdNote = result.rows[0];
-
-      // 1. Automatic PostgreSQL Notification Record
-      await queryDB(
-        `INSERT INTO notifications (user_id, message, type) VALUES ($1, $2, $3)`,
-        [req.user.id, `New note saved: "${title}"`, "note"]
-      ).catch(() => {});
-
-      // 2. Automatic Email Dispatch via Nodemailer
-      if (req.user.email) {
-        sendNotificationEmail({
-          to: req.user.email,
-          subject: `📝 System Note Saved: ${title}`,
-          title: `New Note Added to DevHub Workspace`,
-          body: `You created a new note <strong>[${tag || "General"}] ${title}</strong>:<br><br><em>"${content.slice(0, 150)}${content.length > 150 ? '...' : ''}"</em>`,
-          actionUrl: "http://localhost:5173/notes",
-        }).catch((err) => console.warn("Note notification email error:", err.message));
-      }
-
       return res.status(201).json(createdNote);
     }
   } catch (error) {
-    console.error("PG createNote Error:", error.message);
     return res.status(500).json({ message: "Failed to save note in PostgreSQL" });
   }
 
@@ -91,7 +72,7 @@ export const updateNote = async (req, res) => {
       }
     }
   } catch (error) {
-    console.error("PG updateNote Error:", error.message);
+    // Handled silently
   }
 
   res.json({ message: "Note updated" });
@@ -109,7 +90,7 @@ export const deleteNote = async (req, res) => {
       return res.json({ message: "Note deleted successfully" });
     }
   } catch (error) {
-    console.error("PG deleteNote Error:", error.message);
+    // Handled silently
   }
 
   res.json({ message: "Note removed" });

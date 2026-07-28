@@ -63,10 +63,14 @@ export const initDB = async () => {
         github_username VARCHAR(100) DEFAULT 'harsh-chauhan-dev',
         avatar TEXT DEFAULT 'https://avatars.githubusercontent.com/u/199341266?v=4',
         skills TEXT[] DEFAULT ARRAY['React', 'Node.js', 'Express', 'PostgreSQL', 'Tailwind CSS', 'MongoDB'],
+        is_verified BOOLEAN DEFAULT FALSE,
+        verification_token VARCHAR(255),
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
 
       ALTER TABLE users ADD COLUMN IF NOT EXISTS github_username VARCHAR(100) DEFAULT 'harsh-chauhan-dev';
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS is_verified BOOLEAN DEFAULT FALSE;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_token VARCHAR(255);
 
       CREATE TABLE IF NOT EXISTS todos (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -104,6 +108,16 @@ export const initDB = async () => {
         scheduled_date TIMESTAMP WITH TIME ZONE NOT NULL,
         status VARCHAR(50) DEFAULT 'Scheduled',
         notify_email BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+
+      ALTER TABLE schedules DROP CONSTRAINT IF EXISTS schedules_status_check;
+
+      CREATE TABLE IF NOT EXISTS email_verifications (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id UUID REFERENCES users(id) ON DELETE CASCADE NOT NULL,
+        verification_token_hash VARCHAR(255) NOT NULL,
+        expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
     `);

@@ -1,5 +1,5 @@
 import { queryDB } from "../config/db.js";
-import { sendNotificationEmail } from "../services/mailService.js";
+import { sendScheduleCreatedEmail } from "../services/mailService.js";
 
 // @desc    Get all user schedules from PostgreSQL
 // @route   GET /api/schedules
@@ -14,7 +14,7 @@ export const getSchedules = async (req, res) => {
       return res.json(result.rows);
     }
   } catch (error) {
-    console.error("PG getSchedules Error:", error.message);
+    // Handled silently
   }
 
   res.json([]);
@@ -41,33 +41,28 @@ export const createSchedule = async (req, res) => {
 
       const createdSchedule = result.rows[0];
 
-      // 1. Create In-App Database Notification in PostgreSQL
       const formattedDate = new Date(scheduledDate).toLocaleString([], {
         month: 'short',
         day: 'numeric',
         hour: '2-digit',
         minute: '2-digit'
       });
-      await queryDB(
-        "INSERT INTO notifications (user_id, message, type) VALUES ($1, $2, $3)",
-        [req.user.id, `⏰ Schedule Created: "${title}" set for ${formattedDate}`, "reminder"]
-      ).catch(() => {});
 
-      // 2. Dispatch Email via Nodemailer if notify_email is true
+      // Dispatch Email via Nodemailer ONLY on schedule creation if notify_email is true
       if (notifyEmail !== false && req.user.email) {
-        sendNotificationEmail({
+        sendScheduleCreatedEmail({
           to: req.user.email,
-          subject: `⏰ Upcoming Schedule Set: ${title}`,
-          title: `New Schedule Event Added to DevHub Workspace`,
-          body: `You scheduled an upcoming event <strong>"${title}"</strong> set for <strong>${formattedDate}</strong>.<br><br><em>Description: ${description || "No description provided"}</em>`,
+          name: req.user.name,
+          title,
+          scheduledDate: formattedDate,
+          description,
           actionUrl: "http://localhost:5173/schedules",
-        }).catch((err) => console.warn("Schedule notification email error:", err.message));
+        }).catch(() => {});
       }
 
       return res.status(201).json(createdSchedule);
     }
   } catch (error) {
-    console.error("PG createSchedule Error:", error.message);
     return res.status(500).json({ message: "Failed to create schedule in PostgreSQL database" });
   }
 
@@ -108,7 +103,7 @@ export const updateSchedule = async (req, res) => {
       }
     }
   } catch (error) {
-    console.error("PG updateSchedule Error:", error.message);
+    // Handled silently
   }
 
   res.json({ message: "Schedule updated" });
@@ -126,7 +121,7 @@ export const deleteSchedule = async (req, res) => {
       return res.json({ message: "Schedule deleted successfully" });
     }
   } catch (error) {
-    console.error("PG deleteSchedule Error:", error.message);
+    // Handled silently
   }
 
   res.json({ message: "Schedule removed" });
