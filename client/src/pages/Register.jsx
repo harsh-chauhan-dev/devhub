@@ -52,10 +52,10 @@ const Register = () => {
     <main className="min-h-screen flex items-center justify-center bg-[#0F172A] text-[#F8FAFC] px-6">
       <div className="bg-[#1E293B] shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-[24px] w-full max-w-md p-8 border border-[#334155]">
         <div className="text-center mb-8">
-          <div className="w-12 h-12 rounded-[14px] bg-gradient-to-tr from-[#4F7CFF] to-[#38BDF8] text-white flex items-center justify-center text-2xl font-black mx-auto mb-3 shadow-lg shadow-[#4F7CFF]/30">
-            D
-          </div>
-          <h1 className="text-3xl font-black text-[#F8FAFC]">Create Account</h1>
+          <span className="text-3xl font-extrabold tracking-tight text-[var(--text-primary)]">
+            Dev<span className="text-[#38BDF8]">Hub</span>
+          </span>
+          <h1 className="text-xl font-bold text-[#F8FAFC] mt-3">Create Account</h1>
           <p className="text-[#94A3B8] text-xs mt-1 font-medium">Join DevHub developer workspace</p>
         </div>
 

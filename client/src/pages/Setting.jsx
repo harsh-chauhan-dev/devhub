@@ -11,7 +11,7 @@ const Settings = () => {
   const [savedMessage, setSavedMessage] = useState("");
 
   const handleSave = () => {
-    setSavedMessage("Settings & preferences saved successfully!");
+    setSavedMessage("Settings Saved Successfully!");
     setTimeout(() => setSavedMessage(""), 3000);
   };
 

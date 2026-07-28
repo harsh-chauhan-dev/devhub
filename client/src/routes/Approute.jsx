@@ -3,7 +3,6 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Landing from "../pages/Landing";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
-
 import Dashboard from "../pages/Dashboard";
 import Profile from "../pages/Profile";
 import Settings from "../pages/Setting";
@@ -44,17 +43,17 @@ const Approute = () => {
           </ProtectedRoute>
         }
       >
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/schedules" element={<Schedules />} />
+        <Route path="/workspace" element={<Dashboard />} />
+        <Route path="/planner" element={<Schedules />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/settings" element={<Settings />} />
-        <Route path="/todo" element={<Todo />} />
-        <Route path="/notes" element={<Notes />} />
-        <Route path="/analytics" element={<Analytics />} />
+        <Route path="/tasks" element={<Todo />} />
+        <Route path="/notebook" element={<Notes />} />
+        <Route path="/insights" element={<Analytics />} />
       </Route>
 
       {/* Fallback redirect */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<Navigate to="/workspace" replace />} />
     </Routes>
   );
 };

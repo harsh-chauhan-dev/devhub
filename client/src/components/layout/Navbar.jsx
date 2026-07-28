@@ -46,12 +46,12 @@ const Navbar = () => {
     event.preventDefault();
     if (!searchText.trim()) return;
     const query = searchText.toLowerCase().trim();
-    if (query.includes("todo") || query.includes("task")) navigate("/todo");
-    else if (query.includes("note")) navigate("/notes");
-    else if (query.includes("analytic") || query.includes("chart")) navigate("/analytics");
+    if (query.includes("todo") || query.includes("task")) navigate("/tasks");
+    else if (query.includes("note")) navigate("/notebook");
+    else if (query.includes("analytic") || query.includes("chart")) navigate("/insights");
     else if (query.includes("profile")) navigate("/profile");
     else if (query.includes("setting")) navigate("/settings");
-    else navigate("/dashboard");
+    else navigate("/workspace");
   };
 
   const handleDismissNotification = async (id) => {
@@ -67,10 +67,7 @@ const Navbar = () => {
         {/* Brand */}
         <div className="flex items-center gap-8">
           <Link to="/dashboard" className="flex items-center gap-2.5 group">
-            <div className="w-9 h-9 rounded-[12px] bg-gradient-to-tr from-[#4F7CFF] to-[#38BDF8] flex items-center justify-center text-white shadow-md shadow-[#4F7CFF]/20 font-black text-xl group-hover:scale-105 transition duration-200">
-              D
-            </div>
-            <span className="text-xl font-extrabold tracking-tight text-[var(--text-primary)]">
+            <span className="text-2xl font-extrabold tracking-tight text-[var(--text-primary)]">
               Dev<span className="text-[#38BDF8]">Hub</span>
             </span>
           </Link>

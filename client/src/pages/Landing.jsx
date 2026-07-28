@@ -27,10 +27,7 @@ const Landing = () => {
       <header className="sticky top-0 z-50 bg-[var(--bg-main)]/90 backdrop-blur-md border-b border-[var(--border)]">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="w-9 h-9 rounded-[12px] bg-gradient-to-tr from-[#4F7CFF] to-[#38BDF8] flex items-center justify-center text-white shadow-md shadow-[#4F7CFF]/20 font-black text-xl group-hover:scale-105 transition duration-200">
-              D
-            </div>
-            <span className="text-xl font-extrabold tracking-tight text-[var(--text-primary)]">
+            <span className="text-2xl font-extrabold tracking-tight text-[var(--text-primary)]">
               Dev<span className="text-[#38BDF8]">Hub</span>
             </span>
           </Link>
@@ -100,7 +97,7 @@ const Landing = () => {
                 to="/login"
                 className="devhub-btn-secondary px-6 py-3.5 text-sm flex items-center gap-2"
               >
-                View Demo Account
+                Login 
               </Link>
             </div>
 

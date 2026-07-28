@@ -9,9 +9,9 @@ import { useAuth } from "../hooks/useAuth";
 import { Sparkles, Calendar as CalendarIcon, GitCommit, CheckCircle2, FileCode } from "lucide-react";
 
 const recentActivities = [
-  { id: 1, icon: GitCommit, title: "Pushed 3 commits to harsh-chauhan-dev/devhub", time: "15 mins ago", color: "text-[#38BDF8]" },
-  { id: 2, icon: CheckCircle2, title: "Completed task: Setup REST API endpoints in Node+Express", time: "42 mins ago", color: "text-[#22C55E]" },
-  { id: 3, icon: FileCode, title: "Created new note: System Architecture Notes", time: "2 hrs ago", color: "text-[#8B5CF6]" },
+  // { id: 1, icon: GitCommit, title: "Pushed 3 commits to harsh-chauhan-dev/devhub", time: "15 mins ago", color: "text-[#38BDF8]" },
+  // // { id: 2, icon: CheckCircle2, title: "Completed task: Setup REST API endpoints in Node+Express", time: "42 mins ago", color: "text-[#22C55E]" },
+  // // { id: 3, icon: FileCode, title: "Created new note: System Architecture Notes", time: "2 hrs ago", color: "text-[#8B5CF6]" },
 ];
 
 const Dashboard = () => {
@@ -32,7 +32,7 @@ const Dashboard = () => {
             <Sparkles size={14} className="text-[#38BDF8]" /> Developer & Computer Science Workspace
           </span>
           <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight">
-            Welcome back, {user?.name?.split(" ")[0] || "Harsh"}! 👋
+            Welcome back, {user?.name?.split(" ")[0] || "ussername"}
           </h1>
           <p className="text-white/80 text-sm mt-1.5 max-w-xl font-medium leading-relaxed">
             Your high-performance workspace for repository stats, system notes, active tasks, and coding productivity.
