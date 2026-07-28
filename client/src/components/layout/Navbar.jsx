@@ -4,6 +4,7 @@ import { useTheme } from "../../hooks/useTheme";
 import { useAuth } from "../../hooks/useAuth";
 import { Link, useNavigate } from "react-router-dom";
 import { notificationService } from "../../services/notificationService";
+import devhubLogo from "../../assets/devhub-icon.png";
 
 // Helper utility to parse clean GitHub handle from full URL or string
 const parseGithubHandle = (input) => {
@@ -88,6 +89,11 @@ const Navbar = () => {
         {/* Brand */}
         <div className="flex items-center gap-8">
           <Link to="/dashboard" className="flex items-center gap-2.5 group">
+            <img
+              src={devhubLogo}
+              alt="DevHub Logo"
+              className="w-12 h-12 object-contain rounded-[8px] transition duration-200 group-hover:scale-105"
+            />
             <span className="text-2xl font-extrabold tracking-tight text-[var(--text-primary)]">
               Dev<span className="text-[#38BDF8]">Hub</span>
             </span>
@@ -113,14 +119,14 @@ const Navbar = () => {
           {/* Action shortcut pills */}
           <div className="hidden sm:flex items-center gap-2">
             <Link
-              to="/todo"
+              to="/tasks"
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[var(--text-secondary)] bg-[var(--bg-card)] hover:bg-[var(--bg-sec)] border border-[var(--border)] rounded-[10px] transition duration-200"
             >
               <CheckSquare size={13} className="text-[#38BDF8]" />
               Tasks
             </Link>
             <Link
-              to="/notes"
+              to="/notebook"
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[var(--text-secondary)] bg-[var(--bg-card)] hover:bg-[var(--bg-sec)] border border-[var(--border)] rounded-[10px] transition duration-200"
             >
               <FileText size={13} className="text-[#818CF8]" />

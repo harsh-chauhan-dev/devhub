@@ -61,4 +61,19 @@ export const githubService = {
     }
     return [];
   },
+
+  getUserEvents: async (username = "developer") => {
+    const handle = (username && username.trim()) || "developer";
+    try {
+      const res = await fetch(`https://api.github.com/users/${handle}/events/public?per_page=60`);
+      if (!res.ok) throw new Error(`Failed to fetch events for '${handle}'`);
+      const events = await res.json();
+      if (Array.isArray(events)) {
+        return events;
+      }
+    } catch (err) {
+      console.warn("GitHub events fetch warning:", err.message);
+    }
+    return [];
+  },
 };
