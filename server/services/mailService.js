@@ -51,7 +51,7 @@ export const sendNotificationEmail = async ({ to, subject, title, body, actionUr
   `;
 
   if (!process.env.SMTP_USER || process.env.SMTP_USER === "your_email@gmail.com") {
-    console.log(`✉️ [Mail Service Simulation] Email queued to: ${to} | Subject: "${subject}"`);
+    // console.log(`✉️ [Mail Service Simulation] Email queued to: ${to} | Subject: "${subject}"`);
     return { success: true, simulated: true };
   }
 
@@ -62,10 +62,10 @@ export const sendNotificationEmail = async ({ to, subject, title, body, actionUr
       subject,
       html: htmlContent,
     });
-    console.log(`✅ [Mail Service] Email successfully sent to ${to}: ${info.messageId}`);
+    // console.log(`✅ [Mail Service] Email successfully sent to ${to}: ${info.messageId}`);
     return { success: true, messageId: info.messageId };
   } catch (error) {
-    console.error(`❌ [Mail Service Error] Failed to send email to ${to}:`, error.message);
+    // console.error(`❌ [Mail Service Error] Failed to send email to ${to}:`, error.message);
     return { success: false, error: error.message };
   }
 };

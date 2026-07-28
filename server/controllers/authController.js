@@ -169,7 +169,7 @@ export const getMe = async (req, res) => {
 export const updateProfile = async (req, res) => {
   const { name, role, bio, location, githubUsername, avatar, skills } = req.body;
   const github = cleanGithubUsername(githubUsername || req.user.githubUsername);
-  const avatarUrl = `https://github.com/${github}.png`;
+  const avatarUrl = avatar || `https://github.com/${github}.png`;
 
   try {
     if (isPgConnected && req.user.id && req.user.id.includes("-")) {

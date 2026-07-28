@@ -78,7 +78,7 @@ export const getAnalytics = async (req, res) => {
       }
     }
   } catch (error) {
-    console.error("PG Analytics Calculation Error:", error.message);
+    // console.error("PG Analytics Calculation Error:", error.message);
   }
 
   // Default category breakdown if empty

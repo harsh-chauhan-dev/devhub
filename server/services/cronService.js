@@ -3,11 +3,11 @@ import { queryDB, isPgConnected } from "../config/db.js";
 import { sendNotificationEmail } from "./mailService.js";
 
 export const initCronJobs = () => {
-  console.log("⏰ Initializing node-cron background scheduled tasks...");
+  // console.log("⏰ Initializing node-cron background scheduled tasks...");
 
   // Schedule background task runner to check pending sprint tasks & upcoming schedules every 5 minutes
   cron.schedule("*/5 * * * *", async () => {
-    console.log("🔍 [Cron Job] Running automated schedule check and email dispatcher...");
+    // console.log("🔍 [Cron Job] Running automated schedule check and email dispatcher...");
 
     try {
       if (isPgConnected) {
@@ -22,7 +22,7 @@ export const initCronJobs = () => {
 
         for (const userRow of todoResult.rows) {
           if (userRow.pending_count > 0) {
-            console.log(`📩 Dispatching automated scheduled task email to ${userRow.email}...`);
+            // console.log(`📩 Dispatching automated scheduled task email to ${userRow.email}...`);
 
             await queryDB(
               `INSERT INTO notifications (user_id, message, type) VALUES ($1, $2, $3)`,
@@ -74,9 +74,9 @@ export const initCronJobs = () => {
         }
       }
     } catch (err) {
-      console.error("❌ [Cron Job Error]:", err.message);
+      // console.error("❌ [Cron Job Error]:", err.message);
     }
   });
 
-  console.log("✅ Node-cron background schedule tasks active (running every 5 mins).");
+  // console.log("✅ Node-cron background schedule tasks active (running every 5 mins).");
 };

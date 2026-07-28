@@ -29,12 +29,12 @@ const ensureDatabaseExists = async () => {
     await adminClient.connect();
     const res = await adminClient.query("SELECT 1 FROM pg_database WHERE datname = $1", [dbName]);
     if (res.rowCount === 0) {
-      console.log(`📦 Creating PostgreSQL database "${dbName}"...`);
+      // console.log(`📦 Creating PostgreSQL database "${dbName}"...`);
       await adminClient.query(`CREATE DATABASE "${dbName}"`);
-      console.log(`✅ PostgreSQL database "${dbName}" created successfully!`);
+      // console.log(`✅ PostgreSQL database "${dbName}" created successfully!`);
     }
   } catch (err) {
-    console.warn("⚠️ Database existence check warning:", err.message);
+    // console.warn("⚠️ Database existence check warning:", err.message);
   } finally {
     await adminClient.end().catch(() => {});
   }
@@ -47,7 +47,7 @@ export const initDB = async () => {
 
     // 2. Connect pool
     const client = await pool.connect();
-    console.log(`✅ PostgreSQL Database "${dbName}" Connected Successfully!`);
+    // console.log(`✅ PostgreSQL Database "${dbName}" Connected Successfully!`);
     isPgConnected = true;
 
     // 3. Auto-initialize tables
@@ -109,9 +109,9 @@ export const initDB = async () => {
     `);
 
     client.release();
-    console.log("✅ PostgreSQL Database Tables Initialized (users, todos, notes, notifications, schedules)");
+    // console.log("✅ PostgreSQL Database Tables Initialized (users, todos, notes, notifications, schedules)");
   } catch (error) {
-    console.warn("⚠️ PostgreSQL Connection Error:", error.message);
+    // console.warn("⚠️ PostgreSQL Connection Error:", error.message);
     isPgConnected = false;
   }
 };
