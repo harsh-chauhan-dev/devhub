@@ -11,11 +11,15 @@ const parseCookies = (req) => {
 };
 
 export const protect = async (req, res, next) => {
-  const cookies = parseCookies(req);
-  let token = cookies.token;
+  let token = null;
 
-  if (!token && req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
+  if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
     token = req.headers.authorization.split(" ")[1];
+  }
+
+  if (!token) {
+    const cookies = parseCookies(req);
+    token = cookies.token;
   }
 
   if (token) {
@@ -50,11 +54,12 @@ export const protect = async (req, res, next) => {
         }
       }
 
-      return res.status(401).json({ message: "Not authorized, user not found" });
+      return res.status(401).json({ message: "Not authorized, user record not found" });
     } catch (error) {
-      return res.status(401).json({ message: "Not authorized, token failed" });
+      console.error("JWT Verification Failure:", error.message);
+      return res.status(401).json({ message: `Not authorized, token verification failed: ${error.message}` });
     }
   } else {
-    return res.status(401).json({ message: "Not authorized, no token cookie provided" });
+    return res.status(401).json({ message: "Not authorized, missing authorization token" });
   }
 };

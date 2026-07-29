@@ -15,6 +15,14 @@ export const authService = {
   },
 
   getMe: async () => {
+    const token = localStorage.getItem(TOKEN_KEY);
+    const savedUser = localStorage.getItem(AUTH_KEY);
+
+    // Skip network call for unauthenticated visitors
+    if (!token && !savedUser) {
+      return null;
+    }
+
     try {
       const user = await fetchAPI("/auth/me");
       if (user && user.id) {
@@ -23,6 +31,7 @@ export const authService = {
       }
     } catch (err) {
       localStorage.removeItem(AUTH_KEY);
+      localStorage.removeItem(TOKEN_KEY);
     }
     return null;
   },

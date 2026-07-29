@@ -24,10 +24,35 @@ await initDB();
 initCronJobs();
 
 // Middleware
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "http://127.0.0.1:5173",
+];
+
+if (process.env.CLIENT_URL) {
+  const clientUrl = process.env.CLIENT_URL.trim().replace(/\/+$/, "");
+  allowedOrigins.push(clientUrl);
+  allowedOrigins.push(`${clientUrl}/`);
+}
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL,
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps, curl, server-to-server)
+      if (!origin) return callback(null, true);
+      const cleanOrigin = origin.replace(/\/+$/, "");
+      if (
+        allowedOrigins.some((o) => o.replace(/\/+$/, "") === cleanOrigin) ||
+        !process.env.CLIENT_URL
+      ) {
+        return callback(null, true);
+      }
+      return callback(null, true);
+    },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
   })
 );
 

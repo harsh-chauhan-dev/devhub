@@ -7,18 +7,19 @@ import { sendAuthVerificationEmail, sendWelcomeEmail, sendProfileUpdatedEmail } 
 const generateToken = (id) => {
   return jwt.sign(
     { id },
-    process.env.JWT_SECRET,
+    process.env.JWT_SECRET || "super_secret_jwt_key_devhub_2026",
     {
-      expiresIn: process.env.JWT_EXPIRE,
+      expiresIn: process.env.JWT_EXPIRE || "30d",
     }
   );
 };
 
 // Helper utility to set HTTP-Only cookie natively
 export const sendTokenCookie = (res, token) => {
+  const isProd = process.env.NODE_ENV === "production" || !!process.env.CLIENT_URL;
   res.setHeader(
     "Set-Cookie",
-    `token=${token}; HttpOnly; Path=/; Max-Age=${30 * 24 * 60 * 60}; SameSite=Lax`
+    `token=${token}; HttpOnly; Path=/; Max-Age=${30 * 24 * 60 * 60}; ${isProd ? "SameSite=None; Secure" : "SameSite=Lax"}`
   );
 };
 
