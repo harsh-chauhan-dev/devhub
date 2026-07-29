@@ -2,19 +2,32 @@ import nodemailer from "nodemailer";
 
 const getTransporter = () => {
   const host = process.env.SMTP_HOST || "smtp.gmail.com";
-  const port = Number(process.env.SMTP_PORT || 465);
+  const port = 587;
   const user = process.env.SMTP_USER;
   const rawPass = process.env.SMTP_PASS || "";
   const pass = rawPass.replace(/\s+/g, "");
 
-  // Use Nodemailer built-in Gmail service for Gmail addresses
+  console.log("SMTP Config:", {
+    host,
+    port,
+    user,
+    hasPass: !!pass,
+  });
+
+  // Transport configuration supporting Gmail or custom SMTP with TLS fallback
   if (host.includes("gmail") || !process.env.SMTP_HOST) {
     return nodemailer.createTransport({
-      service: "gmail",
+      host: "smtp.gmail.com",
+      port: port || 587,
+      secure: port === 465,
+      requireTLS: port !== 465,
       auth: { user, pass },
-      connectionTimeout: 10000,
-      greetingTimeout: 5000,
-      socketTimeout: 10000,
+      connectionTimeout: 30000,
+      greetingTimeout: 30000,
+      socketTimeout: 30000,
+      tls: {
+        rejectUnauthorized: false,
+      },
     });
   }
 
@@ -23,9 +36,12 @@ const getTransporter = () => {
     port,
     secure: port === 465,
     auth: { user, pass },
-    connectionTimeout: 10000,
-    greetingTimeout: 5000,
-    socketTimeout: 10000,
+    connectionTimeout: 30000,
+    greetingTimeout: 30000,
+    socketTimeout: 30000,
+    tls: {
+      rejectUnauthorized: false,
+    },
   });
 };
 
