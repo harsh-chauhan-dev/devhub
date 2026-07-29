@@ -45,6 +45,8 @@ const VerifyEmail = () => {
     performVerification();
   }, [token, emailParam]);
 
+  const [directLink, setDirectLink] = useState("");
+
   const handleResend = async (e) => {
     e.preventDefault();
     const targetEmail = emailInput.trim() || emailParam;
@@ -55,6 +57,9 @@ const VerifyEmail = () => {
     try {
       const res = await authService.resendVerification(targetEmail);
       setResendMsg(res.message || "Verification email dispatched!");
+      if (res.verificationUrl) {
+        setDirectLink(res.verificationUrl);
+      }
     } catch (err) {
       setResendMsg(err.message || "Failed to resend verification email.");
     } finally {
@@ -123,6 +128,14 @@ const VerifyEmail = () => {
 
             <form onSubmit={handleResend} className="mt-4 text-left space-y-3">
               {resendMsg && <p className="text-xs text-[#38BDF8] text-center font-medium">{resendMsg}</p>}
+              {directLink && (
+                <a
+                  href={directLink}
+                  className="block w-full py-3 px-4 bg-gradient-to-r from-[#2563EB] to-[#38BDF8] hover:from-[#1D4ED8] hover:to-[#0284C7] text-white font-bold text-xs rounded-[12px] shadow-lg text-center transition-all animate-pulse"
+                >
+                  ⚡ Click Here to Verify Account Instantly →
+                </a>
+              )}
               <Button type="submit" disabled={resending} className="w-full py-3 rounded-[12px] font-bold text-xs bg-[#334155] hover:bg-[#475569] text-[#F8FAFC]">
                 {resending ? "Resending..." : "Resend Verification Email"}
               </Button>
@@ -150,6 +163,14 @@ const VerifyEmail = () => {
                 className="w-full devhub-input p-3 text-sm"
               />
               {resendMsg && <p className="text-xs text-[#38BDF8] mt-1">{resendMsg}</p>}
+              {directLink && (
+                <a
+                  href={directLink}
+                  className="block w-full py-3 px-4 bg-gradient-to-r from-[#2563EB] to-[#38BDF8] hover:from-[#1D4ED8] hover:to-[#0284C7] text-white font-bold text-xs rounded-[12px] shadow-lg text-center transition-all animate-pulse"
+                >
+                  ⚡ Click Here to Verify Account Instantly →
+                </a>
+              )}
               <Button type="submit" disabled={resending} className="w-full py-3 rounded-[12px] font-bold">
                 {resending ? "Sending..." : "Resend Verification Email"}
               </Button>

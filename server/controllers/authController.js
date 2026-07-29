@@ -117,12 +117,14 @@ export const registerUser = async (req, res) => {
 
     // Dispatch Auth Email Verification via Nodemailer
     const clientBaseUrl = (process.env.CLIENT_URL || "http://localhost:5173").replace(/\/+$/, "");
-    sendAuthVerificationEmail({
+    const verificationUrl = `${clientBaseUrl}/verify-email?token=${verificationToken}&email=${encodeURIComponent(user.email)}`;
+
+    const mailResult = await sendAuthVerificationEmail({
       to: user.email,
       name: user.name,
       verificationToken,
-      actionUrl: `${clientBaseUrl}/verify-email?token=${verificationToken}&email=${encodeURIComponent(user.email)}`,
-    }).catch((err) => console.error("Registration mail dispatch error:", err));
+      actionUrl: verificationUrl,
+    }).catch((err) => ({ success: false, error: err.message }));
 
     return res.status(201).json({
       user: {
@@ -137,7 +139,9 @@ export const registerUser = async (req, res) => {
         skills: user.skills,
         isVerified: user.is_verified,
       },
-      message: "Registration successful! A verification email has been sent to your email inbox.",
+      message: "Registration successful! A verification link has been generated.",
+      verificationUrl,
+      simulated: mailResult?.simulated || false,
     });
   } catch (error) {
     return res.status(500).json({ message: "Registration failed, database error" });
@@ -284,7 +288,7 @@ export const resendVerificationEmail = async (req, res) => {
       return res.status(400).json({ message: "Email address is already verified." });
     }
 
-    // 60-second cooldown check from latest token creation
+    // 10-second soft cooldown check
     const tokenRes = await queryDB(
       "SELECT created_at FROM email_verifications WHERE user_id = $1 ORDER BY created_at DESC LIMIT 1",
       [user.id]
@@ -292,8 +296,8 @@ export const resendVerificationEmail = async (req, res) => {
 
     if (tokenRes.rows.length > 0) {
       const lastSent = new Date(tokenRes.rows[0].created_at).getTime();
-      if (Date.now() - lastSent < 60 * 1000) {
-        return res.status(429).json({ message: "Please wait 60 seconds before requesting another verification email." });
+      if (Date.now() - lastSent < 10 * 1000) {
+        return res.status(429).json({ message: "Please wait 10 seconds before requesting another verification email." });
       }
     }
 
@@ -315,14 +319,23 @@ export const resendVerificationEmail = async (req, res) => {
 
     // Dispatch Verification Email
     const clientBaseUrl = (process.env.CLIENT_URL || "http://localhost:5173").replace(/\/+$/, "");
-    await sendAuthVerificationEmail({
+    const verificationUrl = `${clientBaseUrl}/verify-email?token=${verificationToken}&email=${encodeURIComponent(user.email)}`;
+
+    const mailResult = await sendAuthVerificationEmail({
       to: user.email,
       name: user.name,
       verificationToken,
-      actionUrl: `${clientBaseUrl}/verify-email?token=${verificationToken}&email=${encodeURIComponent(user.email)}`,
-    });
+      actionUrl: verificationUrl,
+    }).catch((err) => ({ success: false, error: err.message }));
 
-    return res.json({ message: "Verification email sent successfully. Please check your email inbox." });
+    return res.json({
+      success: true,
+      message: mailResult?.simulated
+        ? "Verification link generated (SMTP in simulation mode)."
+        : "Verification email dispatched! Please check your email inbox.",
+      verificationUrl,
+      simulated: mailResult?.simulated || false,
+    });
   } catch (error) {
     return res.status(500).json({ message: "Failed to resend verification email" });
   }
