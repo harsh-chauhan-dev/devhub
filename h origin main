@@ -1,8 +1,0 @@
-* [33mcba80fd[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m refactor the UI and change the route name
-[31m|[m * [33m75ef705[m[33m ([m[1;33mtag: [m[1;33mv1.0.0[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Revise README.md for project overview and features
-[31m|[m[31m/[m  
-* [33m71373c4[m feat: complete Node+Express REST API with PostgreSQL, Nodemailer, Cron, Upcoming Schedules, and GitHub integration
-* [33m8f2f85b[m DevHub UI and featue work in localstorage or Mock data
-* [33me2a3982[m feat: add frontend authentication flow and dashboard
-* [33me939ca2[m eat: add login, register and dashboard navigation
-* [33me7d78e4[m first commit
