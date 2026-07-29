@@ -37,8 +37,11 @@ export const authService = {
       body: { email, password },
     });
 
-    const { user } = response;
+    const { user, token } = response;
     localStorage.setItem(AUTH_KEY, JSON.stringify(user));
+    if (token) {
+      localStorage.setItem(TOKEN_KEY, token);
+    }
     return { user };
   },
 
