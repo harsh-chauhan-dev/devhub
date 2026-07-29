@@ -1,40 +1,52 @@
 import nodemailer from "nodemailer";
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || "smtp.gmail.com",
-  port: Number(process.env.SMTP_PORT || 587),
-  secure: Number(process.env.SMTP_PORT) === 465,
+const getTransporter = () => {
+  const host = process.env.SMTP_HOST || "smtp.gmail.com";
+  const port = Number(process.env.SMTP_PORT || 465);
+  const user = process.env.SMTP_USER;
+  const rawPass = process.env.SMTP_PASS || "";
+  const pass = rawPass.replace(/\s+/g, "");
 
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
-
-// Verify SMTP connection when the server starts
-transporter.verify((error, success) => {
-  if (error) {
-    console.error("❌ SMTP Connection Failed");
-    console.error(error);
-  } else {
-    console.log("✅ SMTP Server is ready to send emails.");
+  // Use Nodemailer built-in Gmail service for Gmail addresses
+  if (host.includes("gmail") || !process.env.SMTP_HOST) {
+    return nodemailer.createTransport({
+      service: "gmail",
+      auth: { user, pass },
+      connectionTimeout: 10000,
+      greetingTimeout: 5000,
+      socketTimeout: 10000,
+    });
   }
-});
+
+  return nodemailer.createTransport({
+    host,
+    port,
+    secure: port === 465,
+    auth: { user, pass },
+    connectionTimeout: 10000,
+    greetingTimeout: 5000,
+    socketTimeout: 10000,
+  });
+};
 
 const getFromDetails = () => {
   return `"${process.env.FROM_NAME || "DevHub Workspace"}" <${
-    process.env.FROM_EMAIL || process.env.SMTP_USER
+    process.env.FROM_EMAIL || process.env.SMTP_USER || "noreply@devhub.com"
   }>`;
 };
 
 export const sendMail = async ({ to, subject, html }) => {
   if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-    throw new Error(
-      "SMTP credentials are missing. Check SMTP_USER and SMTP_PASS."
-    );
+    console.warn("⚠️ SMTP credentials missing (SMTP_USER / SMTP_PASS). Skipping email dispatch.");
+    return {
+      success: false,
+      simulated: true,
+      error: "SMTP_USER or SMTP_PASS not configured.",
+    };
   }
 
   try {
+    const transporter = getTransporter();
     const info = await transporter.sendMail({
       from: getFromDetails(),
       to,
@@ -55,10 +67,12 @@ export const sendMail = async ({ to, subject, html }) => {
     };
   } catch (error) {
     console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-    console.error("❌ Email Sending Failed");
-    console.error(error);
+    console.error("❌ Email Sending Failed / Timed Out:", error.message);
     console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
-    throw error;
+    return {
+      success: false,
+      error: error.message,
+    };
   }
 };
