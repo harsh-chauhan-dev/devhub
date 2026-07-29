@@ -357,7 +357,8 @@ export const loginUser = async (req, res) => {
         avatar: userAvatar,
         skills: user.skills,
         isVerified: user.is_verified,
-      }
+      },
+      token,
     });
   } catch (error) {
     console.error("Login error:", error);
