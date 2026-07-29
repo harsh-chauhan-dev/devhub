@@ -2,29 +2,7 @@ import { fetchAPI } from "./api";
 
 const NOTES_KEY = "devhub_notes";
 
-const INITIAL_NOTES = [
-  {
-    id: "nt_1",
-    title: "System Architecture Notes",
-    content: "Implement RESTful APIs with Node.js, Express, and JWT Authentication for secure user data isolation.",
-    tag: "Architecture",
-    date: "2026-07-25",
-  },
-  {
-    id: "nt_2",
-    title: "React 19 Hooks Best Practices",
-    content: "Use standard useActionState and useOptimistic for smoother UI updates without boilerplate loading states.",
-    tag: "Frontend",
-    date: "2026-07-24",
-  },
-  {
-    id: "nt_3",
-    title: "DevHub Sprint Goals",
-    content: "Complete client service REST integration, Node.js + Express backend release, and deployment.",
-    tag: "Sprint",
-    date: "2026-07-26",
-  },
-];
+const INITIAL_NOTES = [];
 
 export const notesService = {
   getNotes: () => {
@@ -40,7 +18,7 @@ export const notesService = {
     try {
       const data = await fetchAPI("/notes");
 
-      if (data && Array.isArray(data) && data.length > 0) {
+      if (data && Array.isArray(data)) {
         const formatted = data.map((n) => ({
           id: n._id || n.id,
           title: n.title,

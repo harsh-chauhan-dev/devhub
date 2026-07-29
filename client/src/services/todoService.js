@@ -2,13 +2,7 @@ import { fetchAPI } from "./api";
 
 const TODO_KEY = "devhub_todos";
 
-const INITIAL_TODOS = [
-  { id: "td_1", text: "Build DevHub Node+Express REST Authentication API", completed: true, priority: "High", category: "Backend" },
-  { id: "td_2", text: "Integrate GitHub & Weather Services", completed: true, priority: "High", category: "Frontend" },
-  { id: "td_3", text: "Design responsive dark mode dashboard", completed: false, priority: "Medium", category: "UI/UX" },
-  { id: "td_4", text: "Setup database schema (MongoDB/PostgreSQL) for Express backend", completed: false, priority: "High", category: "Database" },
-  { id: "td_5", text: "Write unit tests for REST API endpoints", completed: false, priority: "Low", category: "Testing" },
-];
+const INITIAL_TODOS = [];
 
 export const todoService = {
   getTodos: () => {
@@ -24,7 +18,7 @@ export const todoService = {
     try {
       const data = await fetchAPI("/todos");
 
-      if (data && Array.isArray(data) && data.length > 0) {
+      if (data && Array.isArray(data)) {
         const formatted = data.map((t) => ({
           id: t._id || t.id,
           text: t.text,
