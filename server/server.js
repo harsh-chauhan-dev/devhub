@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+
 import { initDB } from "./config/db.js";
 import { initCronJobs } from "./services/cronService.js";
 
@@ -16,30 +17,24 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Initialize PostgreSQL Database Connections & Tables
-initDB();
+// Initialize Database
+await initDB();
 
-// Initialize Background Cron Jobs
+// Initialize Cron Jobs
 initCronJobs();
 
 // Middleware
-const allowedOrigins = ["http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173"];
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin) || origin.startsWith("http://localhost")) {
-        callback(null, true);
-      } else {
-        callback(null, origin);
-      }
-    },
+    origin: process.env.CLIENT_URL,
     credentials: true,
   })
 );
+
 app.set("trust proxy", true);
 app.use(express.json());
 
-// API Routes
+// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/todos", todoRoutes);
 app.use("/api/notes", noteRoutes);
@@ -47,21 +42,23 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/schedules", scheduleRoutes);
 
-// Root Health Check Route
+// Health Check
 app.get("/api/health", (req, res) => {
   res.json({
     status: "OK",
-    service: "DevHub Node.js + Express + PostgreSQL Backend Server",
-    routes: ["/api/auth", "/api/todos", "/api/notes", "/api/notifications", "/api/analytics", "/api/schedules"],
+    service: "DevHub Backend",
     uptime: process.uptime(),
     timestamp: new Date(),
   });
 });
 
+// 404 Handler
 app.use((req, res) => {
-  res.status(404).json({ message: "API Route Not Found" });
+  res.status(404).json({
+    message: "API Route Not Found",
+  });
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 DevHub Server running on http://localhost:${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
