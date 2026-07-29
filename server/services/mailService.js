@@ -1,112 +1,139 @@
-import nodemailer from "nodemailer";
-import dotenv from "dotenv";
+import { sendMail } from "./sendMail.js";
+import { verifyEmailTemplate } from "../templates/verfication-email.js";
+import { getScheduleCreatedEmailTemplate } from "../templates/schedule.js";
+import { getScheduleReminderEmailTemplate } from "../templates/schedule-reminder.js";
 import {
   getLightEmailHtml,
-  getScheduleCreatedEmailTemplate,
-  getScheduleReminderEmailTemplate,
+  getWelcomeEmailTemplate,
+  getTaskCreatedEmailTemplate,
+  getTaskCompletedEmailTemplate,
+  getTaskReminderEmailTemplate,
+  getNoteCreatedEmailTemplate,
+  getProfileUpdatedEmailTemplate,
 } from "../templates/emailTemplate.js";
-import { verifyEmailTemplate } from "../templates/verfication-email.js";
 
-dotenv.config();
+// 1. Auth Registration & Verification Email
+export const sendAuthVerificationEmail = async ({
+  to,
+  name,
+  verificationToken,
+  actionUrl,
+}) => {
+  const verifyUrl = actionUrl ?? `${process.env.CLIENT_URL || "http://localhost:5173"}/verify-email?token=${verificationToken}`;
+  const html = verifyEmailTemplate({
+    name,
+    verifyUrl,
+  });
 
-// Create Nodemailer Transporter
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || "smtp.gmail.com",
-  port: parseInt(process.env.SMTP_PORT || "587"),
-  secure: process.env.SMTP_PORT === "465",
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
-
-const getFromDetails = () => {
-  const fromName = process.env.FROM_NAME || "DevHub Workspace";
-  const fromEmail = process.env.FROM_EMAIL || "notifications@devhub.com";
-  return `"${fromName}" <${fromEmail}>`;
+  return sendMail({
+    to,
+    subject: "Verify your Email Address - DevHub Workspace",
+    html,
+  });
 };
 
-// Generic Light Theme Notification Dispatcher
-export const sendNotificationEmail = async ({ to, subject, title, body, actionUrl, badgeText }) => {
-  const htmlContent = getLightEmailHtml({ title, body, actionUrl, badgeText });
-
-  if (!process.env.SMTP_USER || process.env.SMTP_USER === "your_email@gmail.com") {
-    return { success: true, simulated: true };
-  }
-
-  try {
-    const info = await transporter.sendMail({
-      from: getFromDetails(),
-      to,
-      subject,
-      html: htmlContent,
-    });
-    return { success: true, messageId: info.messageId };
-  } catch (error) {
-    return { success: false, error: error.message };
-  }
+// 2. Welcome Email (Post-Verification)
+export const sendWelcomeEmail = async ({ to, name, actionUrl }) => {
+  const html = getWelcomeEmailTemplate({ name, actionUrl: actionUrl || `${process.env.CLIENT_URL || "http://localhost:5173"}/dashboard` });
+  return sendMail({
+    to,
+    subject: "Welcome to DevHub Workspace! 🎉",
+    html,
+  });
 };
 
-// 1. Auth Email Verification Mailer
-export const sendAuthVerificationEmail = async ({ to, name, verificationToken, actionUrl }) => {
-  const verifyUrl = actionUrl || `http://localhost:5173/verify-email?token=${verificationToken}`;
-  const htmlContent = verifyEmailTemplate(name || "Developer", verifyUrl);
-
-  if (!process.env.SMTP_USER || process.env.SMTP_USER === "your_email@gmail.com") {
-    return { success: true, simulated: true };
-  }
-
-  try {
-    const info = await transporter.sendMail({
-      from: getFromDetails(),
-      to,
-      subject: "Verify Your Email - DevHub",
-      html: htmlContent,
-    });
-    return { success: true, messageId: info.messageId };
-  } catch (error) {
-    return { success: false, error: error.message };
-  }
+// 3. Schedule Created Email
+export const sendScheduleCreatedEmail = async (data) => {
+  const actionUrl = data.actionUrl || `${process.env.CLIENT_URL || "http://localhost:5173"}/schedules`;
+  const html = getScheduleCreatedEmailTemplate({ ...data, actionUrl });
+  return sendMail({
+    to: data.to,
+    subject: `Schedule Created - ${data.title}`,
+    html,
+  });
 };
 
-// 2. Schedule Created Confirmation Mailer
-export const sendScheduleCreatedEmail = async ({ to, name, title, scheduledDate, description, actionUrl }) => {
-  const htmlContent = getScheduleCreatedEmailTemplate({ name, title, scheduledDate, description, actionUrl });
-
-  if (!process.env.SMTP_USER || process.env.SMTP_USER === "your_email@gmail.com") {
-    return { success: true, simulated: true };
-  }
-
-  try {
-    const info = await transporter.sendMail({
-      from: getFromDetails(),
-      to,
-      subject: `⏰ Upcoming Schedule Set: ${title}`,
-      html: htmlContent,
-    });
-    return { success: true, messageId: info.messageId };
-  } catch (error) {
-    return { success: false, error: error.message };
-  }
+// 4. Schedule Reminder Email
+export const sendScheduleReminderEmail = async (data) => {
+  const actionUrl = data.actionUrl || `${process.env.CLIENT_URL || "http://localhost:5173"}/schedules`;
+  const html = getScheduleReminderEmailTemplate({ ...data, actionUrl });
+  return sendMail({
+    to: data.to,
+    subject: `⏰ Upcoming Schedule Reminder - ${data.title}`,
+    html,
+  });
 };
 
-// 3. Schedule Reminder Mailer
-export const sendScheduleReminderEmail = async ({ to, name, title, scheduledDate, description, actionUrl }) => {
-  const htmlContent = getScheduleReminderEmailTemplate({ name, title, scheduledDate, description, actionUrl });
+export const sendScheduleReminderEmailTemplate = sendScheduleReminderEmail;
 
-  if (!process.env.SMTP_USER || process.env.SMTP_USER === "your_email@gmail.com") {
-    return { success: true, simulated: true };
-  }
+// 5. Task Created Email
+export const sendTaskCreatedEmail = async ({ to, name, text, priority, category, actionUrl }) => {
+  const html = getTaskCreatedEmailTemplate({ name, text, priority, category, actionUrl });
+  return sendMail({
+    to,
+    subject: `New Task Added - "${text}"`,
+    html,
+  });
+};
 
-  try {
-    const info = await transporter.sendMail({
-      from: getFromDetails(),
-      to,
-      subject: `⏰ Scheduled Event Reminder: ${title}`,
-      html: htmlContent,
-    });
-    return { success: true, messageId: info.messageId };
-  } catch (error) {
-    return { success: false, error: error.message };
-  }
+// 6. Task Completed Email
+export const sendTaskCompletedEmail = async ({ to, name, text, actionUrl }) => {
+  const html = getTaskCompletedEmailTemplate({ name, text, actionUrl });
+  return sendMail({
+    to,
+    subject: `✅ Task Completed - "${text}"`,
+    html,
+  });
+};
+
+// 7. Task Reminder Digest Email
+export const sendTaskReminderEmail = async ({ to, name, count, taskListHtml, actionUrl }) => {
+  const html = getTaskReminderEmailTemplate({ name, count, taskListHtml, actionUrl });
+  return sendMail({
+    to,
+    subject: `⏰ Sprint Tasks Reminder (${count} pending)`,
+    html,
+  });
+};
+
+// 8. Note Created Email
+export const sendNoteCreatedEmail = async ({ to, name, title, tag, actionUrl }) => {
+  const html = getNoteCreatedEmailTemplate({ name, title, tag, actionUrl });
+  return sendMail({
+    to,
+    subject: `Note Saved - "${title}"`,
+    html,
+  });
+};
+
+// 9. Profile Updated Security Email
+export const sendProfileUpdatedEmail = async ({ to, name, actionUrl }) => {
+  const html = getProfileUpdatedEmailTemplate({ name, actionUrl });
+  return sendMail({
+    to,
+    subject: `Security Alert: Profile Information Updated`,
+    html,
+  });
+};
+
+// 10. General System Notification Email
+export const sendNotificationEmail = async ({
+  to,
+  subject,
+  title,
+  body,
+  actionUrl,
+  badgeText,
+}) => {
+  const html = getLightEmailHtml({
+    title,
+    body,
+    actionUrl,
+    badgeText,
+  });
+  return sendMail({
+    to,
+    subject,
+    html,
+  });
 };

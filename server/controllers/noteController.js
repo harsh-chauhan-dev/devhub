@@ -1,5 +1,4 @@
 import { queryDB, isPgConnected } from "../config/db.js";
-import { sendNotificationEmail } from "../services/mailService.js";
 
 // @desc    Get all user notes from PostgreSQL
 // @route   GET /api/notes
@@ -20,7 +19,7 @@ export const getNotes = async (req, res) => {
   res.json([]);
 };
 
-// @desc    Create a note in PostgreSQL & auto dispatch email
+// @desc    Create a note in PostgreSQL
 // @route   POST /api/notes
 // @access  Private
 export const createNote = async (req, res) => {

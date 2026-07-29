@@ -94,11 +94,16 @@ export const initDB = async () => {
       CREATE TABLE IF NOT EXISTS notifications (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         user_id UUID REFERENCES users(id) ON DELETE CASCADE NOT NULL,
+        title VARCHAR(255),
         message TEXT NOT NULL,
+        description TEXT,
         read BOOLEAN DEFAULT FALSE,
         type VARCHAR(50) DEFAULT 'system',
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
+
+      ALTER TABLE notifications ADD COLUMN IF NOT EXISTS title VARCHAR(255);
+      ALTER TABLE notifications ADD COLUMN IF NOT EXISTS description TEXT;
 
       CREATE TABLE IF NOT EXISTS schedules (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

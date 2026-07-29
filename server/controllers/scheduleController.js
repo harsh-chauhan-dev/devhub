@@ -48,16 +48,30 @@ export const createSchedule = async (req, res) => {
         minute: '2-digit'
       });
 
-      // Dispatch Email via Nodemailer ONLY on schedule creation if notify_email is true
+      // 1. Create In-App Notification Bell Item
+      await queryDB(
+        `INSERT INTO notifications (user_id, title, message, description, type)
+         VALUES ($1, $2, $3, $4, $5)`,
+        [
+          req.user.id,
+          "New Schedule Created",
+          `Schedule: "${title}"`,
+          `Scheduled for ${formattedDate}`,
+          "schedule_created",
+        ]
+      ).catch((err) => console.error("Schedule in-app notification error:", err));
+
+      // 2. Dispatch Email via Nodemailer ONLY on schedule creation if notify_email is true
       if (notifyEmail !== false && req.user.email) {
+        const clientBaseUrl = process.env.CLIENT_URL || "http://localhost:5173";
         sendScheduleCreatedEmail({
           to: req.user.email,
           name: req.user.name,
           title,
           scheduledDate: formattedDate,
-          description,
-          actionUrl: "http://localhost:5173/schedules",
-        }).catch(() => {});
+          description: description || "",
+          actionUrl: `${clientBaseUrl}/schedules`,
+        }).catch((err) => console.error("Schedule created mail dispatch error:", err));
       }
 
       return res.status(201).json(createdSchedule);

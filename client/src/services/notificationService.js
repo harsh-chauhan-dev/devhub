@@ -8,7 +8,9 @@ export const notificationService = {
       if (Array.isArray(data)) {
         return data.map((n) => ({
           id: n.id,
+          title: n.title,
           message: n.message,
+          description: n.description,
           read: n.read,
           type: n.type,
           time: n.created_at ? new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "Just now",

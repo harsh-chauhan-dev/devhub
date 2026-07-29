@@ -199,9 +199,21 @@ const Navbar = () => {
                         onClick={() => handleItemClick(item)}
                         className={`p-3.5 hover:bg-[var(--bg-sec)] transition flex justify-between gap-2 cursor-pointer ${!item.read ? 'bg-[#4F7CFF]/5 border-l-2 border-[#4F7CFF]' : ''}`}
                       >
-                        <div>
-                          <p className="text-xs text-[var(--text-secondary)] font-medium leading-snug">{item.message}</p>
-                          <span className="text-[10px] text-[var(--text-muted)] mt-1 block font-mono">{item.time}</span>
+                        <div className="flex-1 min-w-0">
+                          {item.title && (
+                            <p className="text-xs font-bold text-[var(--text-primary)] leading-tight mb-1 truncate">
+                              {item.title}
+                            </p>
+                          )}
+                          <p className="text-xs text-[var(--text-secondary)] font-medium leading-snug">
+                            {item.message || item.description}
+                          </p>
+                          {item.description && item.message && item.description !== item.message && (
+                            <p className="text-[11px] text-[var(--text-muted)] mt-1 leading-snug">
+                              {item.description}
+                            </p>
+                          )}
+                          <span className="text-[10px] text-[var(--text-muted)] mt-1.5 block font-mono">{item.time}</span>
                         </div>
                         <button
                           onClick={(e) => {

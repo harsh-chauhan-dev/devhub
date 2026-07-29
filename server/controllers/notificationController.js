@@ -1,5 +1,6 @@
 import { queryDB, isPgConnected } from "../config/db.js";
 import { sendNotificationEmail } from "../services/mailService.js";
+import { checkUpcomingSchedules } from "../services/cronService.js";
 
 // @desc    Get user notifications from PostgreSQL
 // @route   GET /api/notifications
@@ -92,7 +93,8 @@ export const clearAllNotifications = async (req, res) => {
 // @route   POST /api/notifications/schedule-check
 // @access  Private
 export const triggerScheduleCheck = async (req, res) => {
-  return res.json({ message: "Schedule check completed" });
+  const result = await checkUpcomingSchedules();
+  return res.json({ message: "Schedule check completed", ...result });
 };
 
 // @desc    Send test notification email via Nodemailer

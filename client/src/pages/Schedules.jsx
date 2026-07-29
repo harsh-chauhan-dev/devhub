@@ -223,8 +223,8 @@ const Schedules = () => {
 
                     <div className="flex items-center gap-2">
                       {item.notifyEmail && (
-                        <span className="text-[#22C55E] text-[10px] font-bold flex items-center gap-1" title="Email Notification Enabled">
-                          <Mail size={12} /> Email Sync
+                        <span className="text-[#22C55E] text-[10px] font-bold flex items-center gap-1" title="Automated Email Reminder Active">
+                          <Mail size={12} /> Auto Email Active
                         </span>
                       )}
                       <button

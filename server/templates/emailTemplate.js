@@ -141,7 +141,26 @@ export const getAuthVerificationEmailTemplate = ({ name, email, verificationToke
   });
 };
 
-// 2. Schedule Created Confirmation Template
+// 2. Welcome Email Template (Post-Verification)
+export const getWelcomeEmailTemplate = ({ name, actionUrl }) => {
+  return getLightEmailHtml({
+    title: `Welcome to DevHub Workspace, ${name || "Developer"}! 🎉`,
+    badgeText: "Welcome Onboard",
+    body: `
+      <p>Hello <strong>${name || "Developer"}</strong>,</p>
+      <p>Your email address has been successfully verified! You now have full access to your developer productivity suite:</p>
+      <ul style="color: #475569; padding-left: 20px; line-height: 1.8;">
+        <li>⚡ <strong>Sprint Task Backlog</strong>: Manage and track developer tasks.</li>
+        <li>📝 <strong>Dev Notebook</strong>: Write code snippets, notes, and technical specs.</li>
+        <li>📅 <strong>Upcoming Schedule Manager</strong>: Set calendar events & automated reminders.</li>
+        <li>🔔 <strong>Live Notification Bell</strong>: Receive real-time workspace updates.</li>
+      </ul>
+    `,
+    actionUrl: actionUrl || "http://localhost:5173/dashboard",
+  });
+};
+
+// 3. Schedule Created Confirmation Template
 export const getScheduleCreatedEmailTemplate = ({ name, title, scheduledDate, description, actionUrl }) => {
   return getLightEmailHtml({
     title: `Schedule Created: ${title}`,
@@ -159,7 +178,7 @@ export const getScheduleCreatedEmailTemplate = ({ name, title, scheduledDate, de
   });
 };
 
-// 3. Upcoming Schedule Reminder Template
+// 4. Upcoming Schedule Reminder Template
 export const getScheduleReminderEmailTemplate = ({ name, title, scheduledDate, description, actionUrl }) => {
   return getLightEmailHtml({
     title: `⏰ Upcoming Event Reminder: ${title}`,
@@ -176,11 +195,44 @@ export const getScheduleReminderEmailTemplate = ({ name, title, scheduledDate, d
   });
 };
 
-// 4. Task Backlog Schedule Reminder Template
+// 5. Task Created Notification Template
+export const getTaskCreatedEmailTemplate = ({ name, text, priority, category, actionUrl }) => {
+  return getLightEmailHtml({
+    title: `Task Added to Backlog: "${text}"`,
+    badgeText: "Task Created",
+    body: `
+      <p>Hi <strong>${name || "Developer"}</strong>,</p>
+      <p>A new task has been added to your DevHub backlog:</p>
+      <div style="background-color: #f8fafc; border-left: 4px solid #38bdf8; padding: 16px; margin: 16px 0; border-radius: 6px;">
+        <p style="margin: 0 0 6px 0; font-weight: 700; color: #0f172a;">${text}</p>
+        <p style="margin: 0; font-size: 13px; color: #64748b;">Priority: <strong>${priority || "Medium"}</strong> • Category: <strong>${category || "General"}</strong></p>
+      </div>
+    `,
+    actionUrl: actionUrl || "http://localhost:5173/tasks",
+  });
+};
+
+// 6. Task Completed Notification Template
+export const getTaskCompletedEmailTemplate = ({ name, text, actionUrl }) => {
+  return getLightEmailHtml({
+    title: `✅ Task Completed: "${text}"`,
+    badgeText: "Sprint Activity",
+    body: `
+      <p>Hi <strong>${name || "Developer"}</strong>,</p>
+      <p>Great progress! The following task was marked as completed in your backlog:</p>
+      <div style="background-color: #f0fdf4; border-left: 4px solid #22c55e; padding: 16px; margin: 16px 0; border-radius: 6px;">
+        <p style="margin: 0; font-weight: 700; color: #14532d;">${text}</p>
+      </div>
+    `,
+    actionUrl: actionUrl || "http://localhost:5173/tasks",
+  });
+};
+
+// 7. Task Backlog Digest Reminder Template
 export const getTaskReminderEmailTemplate = ({ name, count, taskListHtml, actionUrl }) => {
   return getLightEmailHtml({
     title: `⏰ Sprint Tasks Reminder — ${count} Pending Items`,
-    badgeText: "Task Reminder",
+    badgeText: "Task Digest",
     body: `
       <p>Hi <strong>${name || "Developer"}</strong>,</p>
       <p>Here is your current pending sprint backlog update:</p>
@@ -188,6 +240,32 @@ export const getTaskReminderEmailTemplate = ({ name, count, taskListHtml, action
         ${taskListHtml}
       </div>
     `,
-    actionUrl: actionUrl || "http://localhost:5173/todo",
+    actionUrl: actionUrl || "http://localhost:5173/tasks",
+  });
+};
+
+// 8. Note Created Notification Template
+export const getNoteCreatedEmailTemplate = ({ name, title, tag, actionUrl }) => {
+  return getLightEmailHtml({
+    title: `Note Saved: "${title}"`,
+    badgeText: "Notebook Update",
+    body: `
+      <p>Hi <strong>${name || "Developer"}</strong>,</p>
+      <p>You created a new note in your DevHub Notebook under the tag <strong>${tag || "General"}</strong>.</p>
+    `,
+    actionUrl: actionUrl || "http://localhost:5173/notebook",
+  });
+};
+
+// 9. Profile Updated Security Notification Template
+export const getProfileUpdatedEmailTemplate = ({ name, actionUrl }) => {
+  return getLightEmailHtml({
+    title: `Profile Information Updated`,
+    badgeText: "Security & Account",
+    body: `
+      <p>Hi <strong>${name || "Developer"}</strong>,</p>
+      <p>Your DevHub profile details were recently updated. If you did not make this change, please review your account settings immediately.</p>
+    `,
+    actionUrl: actionUrl || "http://localhost:5173/profile",
   });
 };

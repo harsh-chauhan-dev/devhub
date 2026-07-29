@@ -2,14 +2,14 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { queryDB, isPgConnected } from "../config/db.js";
-import { sendAuthVerificationEmail } from "../services/mailService.js";
+import { sendAuthVerificationEmail, sendWelcomeEmail, sendProfileUpdatedEmail } from "../services/mailService.js";
 
 const generateToken = (id) => {
   return jwt.sign(
     { id },
-    process.env.JWT_SECRET || "super_secret_jwt_key_devhub_2026",
+    process.env.JWT_SECRET,
     {
-      expiresIn: process.env.JWT_EXPIRE || "30d",
+      expiresIn: process.env.JWT_EXPIRE,
     }
   );
 };
@@ -26,7 +26,7 @@ export const sendTokenCookie = (res, token) => {
 export const clearTokenCookie = (res) => {
   res.setHeader(
     "Set-Cookie",
-    "token=; HttpOnly; Path=/; Max-Age=0; SameSite=Lax"
+    "token=; HttpOnly; Path=/; Max-Age=0; SameSite=none; secure"
   );
 };
 
@@ -98,13 +98,27 @@ export const registerUser = async (req, res) => {
       [user.id, tokenHash, expiresAt]
     );
 
+    // Insert initial Registration In-App Notification
+    await queryDB(
+      `INSERT INTO notifications (user_id, title, message, description, type)
+       VALUES ($1, $2, $3, $4, $5)`,
+      [
+        user.id,
+        "Welcome to DevHub Workspace 🚀",
+        "Verification email dispatched!",
+        "Please check your inbox and verify your email address to unlock full developer suite capabilities.",
+        "auth_verification",
+      ]
+    ).catch((err) => console.error("Registration notification error:", err));
+
     // Dispatch Auth Email Verification via Nodemailer
+    const clientBaseUrl = process.env.CLIENT_URL || "http://localhost:5173";
     sendAuthVerificationEmail({
       to: user.email,
       name: user.name,
       verificationToken,
-      actionUrl: `http://localhost:5173/verify-email?token=${verificationToken}`,
-    }).catch(() => {});
+      actionUrl: `${clientBaseUrl}/verify-email?token=${verificationToken}`,
+    }).catch((err) => console.error("Registration mail dispatch error:", err));
 
     return res.status(201).json({
       user: {
@@ -183,6 +197,31 @@ export const verifyEmail = async (req, res) => {
       "DELETE FROM email_verifications WHERE user_id = $1",
       [userId]
     );
+
+    // Fetch user details for welcome email & notification
+    const userRes = await queryDB("SELECT name, email FROM users WHERE id = $1", [userId]);
+    if (userRes.rows.length > 0) {
+      const u = userRes.rows[0];
+      // Create Welcome In-App Notification
+      await queryDB(
+        `INSERT INTO notifications (user_id, title, message, description, type)
+         VALUES ($1, $2, $3, $4, $5)`,
+        [
+          userId,
+          "Welcome to DevHub Workspace 🎉",
+          "Account verified successfully!",
+          "Your email has been verified. Explore your developer dashboard, task manager, notebook, and schedules.",
+          "auth_welcome",
+        ]
+      ).catch((err) => console.error("Welcome notification error:", err));
+
+      // Dispatch Welcome Email
+      sendWelcomeEmail({
+        to: u.email,
+        name: u.name,
+        actionUrl: "http://localhost:5173/dashboard",
+      }).catch(() => {});
+    }
 
     return res.json({
       success: true,
@@ -318,10 +357,10 @@ export const loginUser = async (req, res) => {
         avatar: userAvatar,
         skills: user.skills,
         isVerified: user.is_verified,
-      },
-      token,
+      }
     });
   } catch (error) {
+    console.error("Login error:", error);
     return res.status(500).json({ message: "Login failed, database error" });
   }
 };
@@ -367,6 +406,29 @@ export const updateProfile = async (req, res) => {
 
       if (result.rows.length > 0) {
         const u = result.rows[0];
+
+        // Create in-app notification for profile update
+        await queryDB(
+          `INSERT INTO notifications (user_id, title, message, description, type)
+           VALUES ($1, $2, $3, $4, $5)`,
+          [
+            req.user.id,
+            "Profile Information Updated",
+            "Your profile details were updated",
+            "Developer profile, role, bio, and GitHub handle changes saved.",
+            "profile_updated",
+          ]
+        ).catch((err) => console.error("Profile notification error:", err));
+
+        // Dispatch Security Email
+        if (u.email) {
+          sendProfileUpdatedEmail({
+            to: u.email,
+            name: u.name,
+            actionUrl: "http://localhost:5173/profile",
+          }).catch(() => {});
+        }
+
         return res.json({
           id: u.id,
           name: u.name,

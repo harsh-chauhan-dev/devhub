@@ -1,5 +1,4 @@
 import { queryDB, isPgConnected } from "../config/db.js";
-import { sendNotificationEmail } from "../services/mailService.js";
 
 // @desc    Get all user todos from PostgreSQL
 // @route   GET /api/todos
@@ -20,7 +19,7 @@ export const getTodos = async (req, res) => {
   res.json([]);
 };
 
-// @desc    Create a todo in PostgreSQL & auto dispatch email
+// @desc    Create a todo in PostgreSQL
 // @route   POST /api/todos
 // @access  Private
 export const createTodo = async (req, res) => {
@@ -68,6 +67,7 @@ export const updateTodo = async (req, res) => {
          RETURNING id, text, completed, priority, category, created_at`,
         [text, completed, priority, category, id, req.user.id]
       );
+
       if (result.rows.length > 0) {
         return res.json(result.rows[0]);
       }
