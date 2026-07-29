@@ -98,6 +98,9 @@ export const registerUser = async (req, res) => {
       [user.id, tokenHash, expiresAt]
     );
 
+    // Save fallback token on users table
+    await queryDB("UPDATE users SET verification_token = $1 WHERE id = $2", [verificationToken, user.id]);
+
     // Insert initial Registration In-App Notification
     await queryDB(
       `INSERT INTO notifications (user_id, title, message, description, type)
@@ -117,7 +120,7 @@ export const registerUser = async (req, res) => {
       to: user.email,
       name: user.name,
       verificationToken,
-      actionUrl: `${clientBaseUrl}/verify-email?token=${verificationToken}`,
+      actionUrl: `${clientBaseUrl}/verify-email?token=${verificationToken}&email=${encodeURIComponent(user.email)}`,
     }).catch((err) => console.error("Registration mail dispatch error:", err));
 
     return res.status(201).json({
@@ -145,9 +148,10 @@ export const registerUser = async (req, res) => {
 // @access  Public
 export const verifyEmail = async (req, res) => {
   const token = req.body.token || req.query.token;
+  const email = req.body.email || req.query.email;
 
-  if (!token) {
-    return res.status(400).json({ message: "Verification token is required" });
+  if (!token && !email) {
+    return res.status(400).json({ message: "Verification token or email is required" });
   }
 
   try {
@@ -155,35 +159,51 @@ export const verifyEmail = async (req, res) => {
       return res.status(500).json({ message: "PostgreSQL Database Connection Offline" });
     }
 
-    const tokenHash = hashToken(token);
-    
-    // 1. Primary check: email_verifications table
-    let result = await queryDB(
-      "SELECT id, user_id, expires_at FROM email_verifications WHERE verification_token_hash = $1 OR verification_token_hash = $2",
-      [tokenHash, token]
-    );
-
     let userId = null;
 
-    if (result.rows.length > 0) {
-      const record = result.rows[0];
-      if (new Date() > new Date(record.expires_at)) {
-        return res.status(400).json({ message: "Verification token expired. Please request a new verification email." });
-      }
-      userId = record.user_id;
-    } else {
-      // 2. Fallback check: direct verification_token on users table
-      const userResult = await queryDB(
-        "SELECT id FROM users WHERE verification_token = $1",
-        [token]
+    if (token) {
+      const tokenHash = hashToken(token);
+      
+      // 1. Primary check: email_verifications table
+      let result = await queryDB(
+        "SELECT id, user_id, expires_at FROM email_verifications WHERE verification_token_hash = $1 OR verification_token_hash = $2",
+        [tokenHash, token]
       );
-      if (userResult.rows.length > 0) {
-        userId = userResult.rows[0].id;
+
+      if (result.rows.length > 0) {
+        const record = result.rows[0];
+        if (new Date() > new Date(record.expires_at)) {
+          return res.status(400).json({ message: "Verification token expired. Please request a new verification email." });
+        }
+        userId = record.user_id;
+      } else {
+        // 2. Fallback check: direct verification_token on users table
+        const userResult = await queryDB(
+          "SELECT id FROM users WHERE verification_token = $1 OR verification_token = $2",
+          [token, tokenHash]
+        );
+        if (userResult.rows.length > 0) {
+          userId = userResult.rows[0].id;
+        }
+      }
+    }
+
+    // 3. Already-verified check if token was consumed or not found
+    if (!userId && email) {
+      const checkVerified = await queryDB(
+        "SELECT id, is_verified FROM users WHERE email = $1",
+        [email.toLowerCase().trim()]
+      );
+      if (checkVerified.rows.length > 0 && checkVerified.rows[0].is_verified) {
+        return res.json({
+          success: true,
+          message: "Your email address is already verified! You can proceed to log in.",
+        });
       }
     }
 
     if (!userId) {
-      return res.status(400).json({ message: "Invalid or expired verification token" });
+      return res.status(400).json({ message: "Invalid or expired verification token. Please request a new verification link." });
     }
 
     // Mark user as verified in database
@@ -289,13 +309,16 @@ export const resendVerificationEmail = async (req, res) => {
       [user.id, tokenHash, expiresAt]
     );
 
+    // Save fallback token on users table
+    await queryDB("UPDATE users SET verification_token = $1 WHERE id = $2", [verificationToken, user.id]);
+
     // Dispatch Verification Email
     const clientBaseUrl = (process.env.CLIENT_URL || "http://localhost:5173").replace(/\/+$/, "");
     await sendAuthVerificationEmail({
       to: user.email,
       name: user.name,
       verificationToken,
-      actionUrl: `${clientBaseUrl}/verify-email?token=${verificationToken}`,
+      actionUrl: `${clientBaseUrl}/verify-email?token=${verificationToken}&email=${encodeURIComponent(user.email)}`,
     });
 
     return res.json({ message: "Verification email sent successfully. Please check your email inbox." });

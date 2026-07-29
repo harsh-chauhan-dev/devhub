@@ -58,10 +58,10 @@ export const authService = {
     return response;
   },
 
-  verifyEmail: async (token) => {
+  verifyEmail: async (token, email) => {
     return await fetchAPI("/auth/verify-email", {
       method: "POST",
-      body: { token },
+      body: { token, email },
     });
   },
 

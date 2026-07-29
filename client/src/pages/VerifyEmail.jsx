@@ -31,7 +31,7 @@ const VerifyEmail = () => {
 
     const performVerification = async () => {
       try {
-        const res = await authService.verifyEmail(token);
+        const res = await authService.verifyEmail(token, emailParam);
         setSuccess(true);
         setMessage(res.message || "Email verified successfully!");
       } catch (err) {
