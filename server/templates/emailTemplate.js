@@ -122,9 +122,11 @@ export const getLightEmailHtml = ({ title, body, actionUrl, badgeText = "DevHub 
   `;
 };
 
+const getClientBaseUrl = () => (process.env.CLIENT_URL || "http://localhost:5173").replace(/\/+$/, "");
+
 // 1. Auth Registration & Email Verification Template
 export const getAuthVerificationEmailTemplate = ({ name, email, verificationToken, actionUrl }) => {
-  const verifyLink = actionUrl || `http://localhost:5173/verify-email?token=${verificationToken}`;
+  const verifyLink = actionUrl || `${getClientBaseUrl()}/verify-email?token=${verificationToken}`;
   return getLightEmailHtml({
     title: `Verify Your Email Address`,
     badgeText: "Account Verification",
@@ -156,7 +158,7 @@ export const getWelcomeEmailTemplate = ({ name, actionUrl }) => {
         <li>🔔 <strong>Live Notification Bell</strong>: Receive real-time workspace updates.</li>
       </ul>
     `,
-    actionUrl: actionUrl || "http://localhost:5173/dashboard",
+    actionUrl: actionUrl || `${getClientBaseUrl()}/dashboard`,
   });
 };
 
@@ -174,7 +176,7 @@ export const getScheduleCreatedEmailTemplate = ({ name, title, scheduledDate, de
         ${description ? `<p style="margin: 0; font-size: 13px; color: #64748b;"><em>Description: ${description}</em></p>` : ""}
       </div>
     `,
-    actionUrl: actionUrl || "http://localhost:5173/schedules",
+    actionUrl: actionUrl || `${getClientBaseUrl()}/schedules`,
   });
 };
 
@@ -191,7 +193,7 @@ export const getScheduleReminderEmailTemplate = ({ name, title, scheduledDate, d
         ${description ? `<p style="margin: 0; font-size: 13px; color: #166534;"><em>${description}</em></p>` : ""}
       </div>
     `,
-    actionUrl: actionUrl || "http://localhost:5173/schedules",
+    actionUrl: actionUrl || `${getClientBaseUrl()}/schedules`,
   });
 };
 
@@ -208,7 +210,7 @@ export const getTaskCreatedEmailTemplate = ({ name, text, priority, category, ac
         <p style="margin: 0; font-size: 13px; color: #64748b;">Priority: <strong>${priority || "Medium"}</strong> • Category: <strong>${category || "General"}</strong></p>
       </div>
     `,
-    actionUrl: actionUrl || "http://localhost:5173/tasks",
+    actionUrl: actionUrl || `${getClientBaseUrl()}/tasks`,
   });
 };
 
@@ -224,7 +226,7 @@ export const getTaskCompletedEmailTemplate = ({ name, text, actionUrl }) => {
         <p style="margin: 0; font-weight: 700; color: #14532d;">${text}</p>
       </div>
     `,
-    actionUrl: actionUrl || "http://localhost:5173/tasks",
+    actionUrl: actionUrl || `${getClientBaseUrl()}/tasks`,
   });
 };
 
@@ -240,7 +242,7 @@ export const getTaskReminderEmailTemplate = ({ name, count, taskListHtml, action
         ${taskListHtml}
       </div>
     `,
-    actionUrl: actionUrl || "http://localhost:5173/tasks",
+    actionUrl: actionUrl || `${getClientBaseUrl()}/tasks`,
   });
 };
 
@@ -253,7 +255,7 @@ export const getNoteCreatedEmailTemplate = ({ name, title, tag, actionUrl }) => 
       <p>Hi <strong>${name || "Developer"}</strong>,</p>
       <p>You created a new note in your DevHub Notebook under the tag <strong>${tag || "General"}</strong>.</p>
     `,
-    actionUrl: actionUrl || "http://localhost:5173/notebook",
+    actionUrl: actionUrl || `${getClientBaseUrl()}/notebook`,
   });
 };
 
@@ -266,6 +268,6 @@ export const getProfileUpdatedEmailTemplate = ({ name, actionUrl }) => {
       <p>Hi <strong>${name || "Developer"}</strong>,</p>
       <p>Your DevHub profile details were recently updated. If you did not make this change, please review your account settings immediately.</p>
     `,
-    actionUrl: actionUrl || "http://localhost:5173/profile",
+    actionUrl: actionUrl || `${getClientBaseUrl()}/profile`,
   });
 };

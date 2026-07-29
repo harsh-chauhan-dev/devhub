@@ -112,7 +112,7 @@ export const registerUser = async (req, res) => {
     ).catch((err) => console.error("Registration notification error:", err));
 
     // Dispatch Auth Email Verification via Nodemailer
-    const clientBaseUrl = process.env.CLIENT_URL || "http://localhost:5173";
+    const clientBaseUrl = (process.env.CLIENT_URL || "http://localhost:5173").replace(/\/+$/, "");
     sendAuthVerificationEmail({
       to: user.email,
       name: user.name,
@@ -216,10 +216,11 @@ export const verifyEmail = async (req, res) => {
       ).catch((err) => console.error("Welcome notification error:", err));
 
       // Dispatch Welcome Email
+      const clientBaseUrl = (process.env.CLIENT_URL || "http://localhost:5173").replace(/\/+$/, "");
       sendWelcomeEmail({
         to: u.email,
         name: u.name,
-        actionUrl: "http://localhost:5173/dashboard",
+        actionUrl: `${clientBaseUrl}/dashboard`,
       }).catch(() => {});
     }
 
@@ -289,11 +290,12 @@ export const resendVerificationEmail = async (req, res) => {
     );
 
     // Dispatch Verification Email
+    const clientBaseUrl = (process.env.CLIENT_URL || "http://localhost:5173").replace(/\/+$/, "");
     await sendAuthVerificationEmail({
       to: user.email,
       name: user.name,
       verificationToken,
-      actionUrl: `http://localhost:5173/verify-email?token=${verificationToken}`,
+      actionUrl: `${clientBaseUrl}/verify-email?token=${verificationToken}`,
     });
 
     return res.json({ message: "Verification email sent successfully. Please check your email inbox." });
@@ -423,10 +425,11 @@ export const updateProfile = async (req, res) => {
 
         // Dispatch Security Email
         if (u.email) {
+          const clientBaseUrl = (process.env.CLIENT_URL || "http://localhost:5173").replace(/\/+$/, "");
           sendProfileUpdatedEmail({
             to: u.email,
             name: u.name,
-            actionUrl: "http://localhost:5173/profile",
+            actionUrl: `${clientBaseUrl}/profile`,
           }).catch(() => {});
         }
 
