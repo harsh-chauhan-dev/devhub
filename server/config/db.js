@@ -5,13 +5,15 @@ dotenv.config();
 
 const { Pool } = pg;
 
-const targetDbUrl =
-  process.env.DATABASE_URL;
+let targetDbUrl = process.env.DATABASE_URL;
+if (targetDbUrl && targetDbUrl.includes("sslmode=require")) {
+  targetDbUrl = targetDbUrl.replace("sslmode=require", "sslmode=verify-full");
+}
 
 export const pool = new Pool({
   connectionString: targetDbUrl,
   ssl:
-    process.env.NODE_ENV === "production"
+    process.env.NODE_ENV === "production" || (targetDbUrl && targetDbUrl.includes("neon.tech"))
       ? { rejectUnauthorized: false }
       : false,
 });
